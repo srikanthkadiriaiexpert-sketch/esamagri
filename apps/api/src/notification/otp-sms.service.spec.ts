@@ -230,14 +230,47 @@ describe('configuration validation', () => {
     );
   });
 
-  it('accepts SMS_GATEWAY_HUB when both credentials are present', () => {
+  // The gateway accepts a message with no DLT entity or template ID and then
+  // never delivers it, so configuration validation requires all four settings
+  // up front. These are obviously invented values of the right shape.
+  const DLT_IDS = {
+    SMS_GATEWAY_HUB_ENTITY_ID: '1000000000000000001',
+    SMS_GATEWAY_HUB_DLT_TEMPLATE_ID: '1000000000000000002',
+  };
+
+  it('accepts SMS_GATEWAY_HUB when all four required settings are present', () => {
     const env = loadApiEnv({
       ...VALID_SOURCE,
       OTP_DELIVERY_PROVIDER: 'SMS_GATEWAY_HUB',
       SMS_GATEWAY_HUB_API_KEY: 'not-a-real-key',
       SMS_GATEWAY_HUB_SENDER_ID: 'TESTID',
+      ...DLT_IDS,
     });
     expect(env.OTP_DELIVERY_PROVIDER).toBe('SMS_GATEWAY_HUB');
+  });
+
+  it('refuses to start on SMS_GATEWAY_HUB with no DLT entity ID, naming the setting', () => {
+    expect(() =>
+      loadApiEnv({
+        ...VALID_SOURCE,
+        OTP_DELIVERY_PROVIDER: 'SMS_GATEWAY_HUB',
+        SMS_GATEWAY_HUB_API_KEY: 'not-a-real-key',
+        SMS_GATEWAY_HUB_SENDER_ID: 'TESTID',
+        SMS_GATEWAY_HUB_DLT_TEMPLATE_ID: DLT_IDS.SMS_GATEWAY_HUB_DLT_TEMPLATE_ID,
+      })
+    ).toThrow(/SMS_GATEWAY_HUB_ENTITY_ID/);
+  });
+
+  it('refuses to start on SMS_GATEWAY_HUB with no DLT template ID, naming the setting', () => {
+    expect(() =>
+      loadApiEnv({
+        ...VALID_SOURCE,
+        OTP_DELIVERY_PROVIDER: 'SMS_GATEWAY_HUB',
+        SMS_GATEWAY_HUB_API_KEY: 'not-a-real-key',
+        SMS_GATEWAY_HUB_SENDER_ID: 'TESTID',
+        SMS_GATEWAY_HUB_ENTITY_ID: DLT_IDS.SMS_GATEWAY_HUB_ENTITY_ID,
+      })
+    ).toThrow(/SMS_GATEWAY_HUB_DLT_TEMPLATE_ID/);
   });
 
   it('applies the documented defaults for route, channel, DCS and timeout', () => {
@@ -246,6 +279,7 @@ describe('configuration validation', () => {
       OTP_DELIVERY_PROVIDER: 'SMS_GATEWAY_HUB',
       SMS_GATEWAY_HUB_API_KEY: 'not-a-real-key',
       SMS_GATEWAY_HUB_SENDER_ID: 'TESTID',
+      ...DLT_IDS,
     });
     expect(env.SMS_GATEWAY_HUB_ROUTE).toBe('1');
     expect(env.SMS_GATEWAY_HUB_CHANNEL).toBe('2');

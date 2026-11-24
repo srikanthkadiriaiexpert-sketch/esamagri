@@ -174,8 +174,13 @@ describe('registration endpoints — while the switch is ON', () => {
 
     expect(h.customerAuth.registerCustomer).toHaveBeenCalledWith(
       expect.objectContaining({
-        mobileNumber: REGISTER_DTO.mobileNumber,
-        code: REGISTER_DTO.code,
+        // The service takes the proof of the mobile number as one `credential`
+        // object; the code and the number must arrive inside it, unchanged.
+        credential: expect.objectContaining({
+          kind: 'OTP',
+          mobileNumber: REGISTER_DTO.mobileNumber,
+          code: REGISTER_DTO.code,
+        }),
         name: REGISTER_DTO.name,
         quarterBlock: REGISTER_DTO.quarterBlock,
         quarterNumber: REGISTER_DTO.quarterNumber,

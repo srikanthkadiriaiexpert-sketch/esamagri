@@ -57,7 +57,7 @@ describe('DatabaseService (unit, mocked pg)', () => {
       .mockResolvedValueOnce({
         rows: [
           { table_schema: 'shared', count: '14' },
-          { table_schema: 'rik', count: '33' },
+          { table_schema: 'rik', count: '34' },
           { table_schema: 'pif', count: '23' },
         ],
       })

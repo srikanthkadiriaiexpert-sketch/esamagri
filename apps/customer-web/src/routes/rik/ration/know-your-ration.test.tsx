@@ -45,6 +45,16 @@ vi.mock('../../../lib/api/rik-entitlement-api', async () => {
   return { ...actual, ...api };
 });
 
+// The Fresh and Dry eligible-day figures come from their own endpoint. Only the
+// network call is replaced; the label helper is exercised for real.
+const fetchEligibilityDays = vi.fn();
+vi.mock('../../../lib/api/rik-eligibility-days-api', async () => {
+  const actual = await vi.importActual<
+    typeof import('../../../lib/api/rik-eligibility-days-api')
+  >('../../../lib/api/rik-eligibility-days-api');
+  return { ...actual, fetchEligibilityDays: (...args: unknown[]) => fetchEligibilityDays(...args) };
+});
+
 const fetchMyProfile = vi.fn();
 vi.mock('../../../lib/api/customer-api', () => ({
   fetchMyProfile: (...args: unknown[]) => fetchMyProfile(...args),
@@ -328,6 +338,10 @@ beforeEach(() => {
   for (const fn of Object.values(api)) fn.mockReset();
   navigate.mockReset();
   fetchMyProfile.mockReset();
+  // Unavailable unless a test says otherwise, which is what every other test
+  // in this file was written against: the page then shows no day figures.
+  fetchEligibilityDays.mockReset();
+  fetchEligibilityDays.mockRejectedValue(new Error('eligibility days not mocked for this test'));
   routeParams = { poolId: 'pool-cereals' };
   api.fetchEntitlement.mockResolvedValue(response());
   fetchMyProfile.mockResolvedValue({
@@ -340,12 +354,26 @@ beforeEach(() => {
 
 // ===================================================================
 describe('KnowYourRationPage', () => {
-  it('shows who the customer is, their diet, period and eligible days', async () => {
+  it('shows who the customer is, their diet, period, and Fresh and Dry eligible days separately', async () => {
+    fetchEligibilityDays.mockResolvedValue({
+      period: { id: 'period-1', name: 'September 2026', startDate: '2026-09-01', endDate: '2026-09-30' },
+      freshEligibleDays: 30,
+      dryEligibleDays: 20,
+    });
     renderPage(<KnowYourRationPage />);
     expect(await screen.findByText('Lt Cdr A. Sharma')).toBeInTheDocument();
     expect(screen.getByText('Non-vegetarian')).toBeInTheDocument();
-    expect(screen.getByText('30')).toBeInTheDocument();
     expect(screen.getByText(/September 2026/)).toBeInTheDocument();
+
+    // Two figures, each under its own label.
+    expect(await screen.findByText('Fresh eligible days')).toBeInTheDocument();
+    expect(screen.getByText('30 days')).toBeInTheDocument();
+    expect(screen.getByText('Dry eligible days')).toBeInTheDocument();
+    expect(screen.getByText('20 days')).toBeInTheDocument();
+
+    // The single generic "Eligible days" row was removed on purpose: one number
+    // cannot stand for two separately published figures. It must not come back.
+    expect(screen.queryByText('Eligible days')).not.toBeInTheDocument();
   });
 
   it('builds both sections from the response, never from a list of its own', async () => {

@@ -294,13 +294,17 @@ describe('upload status — a missing sheet is stated, never implied', () => {
     expect(screen.queryByText('Not uploaded')).not.toBeInTheDocument();
   });
 
-  it('tells staff the figures do not yet drive the calculation', async () => {
+  it('tells staff the Fresh and Dry figures are what the calculation now uses', async () => {
     await chooseThePeriod();
-    // Staff must not believe these figures are producing the quantities yet.
-    // That is true only after the separate engine change is approved.
+    // The engine change was approved and applied: quantities are calculated
+    // from these two figures. The screen must say so, and must no longer carry
+    // the earlier sentence that said the opposite.
     expect(
-      await screen.findByText(/still calculated from the existing single eligibility figure/i)
+      await screen.findByText(/what entitlement quantities are now calculated from/i)
     ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/still calculated from the existing single eligibility figure/i)
+    ).not.toBeInTheDocument();
   });
 
   it('never blocks the upload form when the status read fails', async () => {
