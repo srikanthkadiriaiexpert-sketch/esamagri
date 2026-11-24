@@ -1,0 +1,42 @@
+{
+  "name": "@esamagri/admin-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "e Samagri admin/staff application \u2014 React, TypeScript, Vite, responsive. STEP 10: application foundation on the existing STEP 6 authentication and STEP 7 RBAC. Business modules land in later phases.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b tsconfig.app.json && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b tsconfig.app.json && tsc -p tsconfig.test.json --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.3",
+    "@esamagri/shared-types": "0.1.0",
+    "@esamagri/config": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "typescript": "^5.5.4",
+    "vite": "^7.1.0",
+    "tailwindcss": "^3.4.10",
+    "postcss": "^8.4.45",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "vitest": "^3.2.4",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "jsdom": "^25.0.1"
+  }
+}

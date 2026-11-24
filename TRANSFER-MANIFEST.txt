@@ -1,0 +1,86 @@
+e-Samagri combined recent-changes overlay
+Prepared: 2026-10-13
+
+Contents are a CHANGED-FILES OVERLAY, not a full application project.
+Extract relative to C:\esamagri\esamagri-app only after confirming a fresh backup.
+
+Included:
+- Milk Coupon application changes and migration 0053
+- PIF cart/category-image changes and migration 0054
+- RIK fresh-staple image assets and migration 0052
+- Latest included demo database snapshot from the PIF transfer archive
+
+IMPORTANT:
+- Do not run demo-bootstrap.cjs until you have backed up the PostgreSQL demo database.
+- demo-bootstrap recreates the demo database and replaces its current contents.
+- Do not run migrations manually against an existing database without checking migration history.
+- This archive does not include unchanged project files or node_modules.
+- The archive was assembled from the supplied change archives; it has not been applied to or tested on the Windows project.
+
+File origins:
+milk-coupon: apps/admin-web/src/lib/api/rik-config-api.ts
+milk-coupon: apps/admin-web/src/lib/api/rik-fulfillment-api.ts
+milk-coupon: apps/admin-web/src/lib/api/rik-issue-vouchers-api.ts
+milk-coupon: apps/admin-web/src/routes/FulfillmentPage.tsx
+milk-coupon: apps/admin-web/src/routes/IssueVouchersPage.tsx
+milk-coupon: apps/admin-web/src/routes/rik-config/PackSizesPage.tsx
+pif: apps/api/src/pif/pif-category-images.integration.spec.ts
+milk-coupon: apps/api/src/pif/pif.integration.spec.ts
+milk-coupon: apps/api/src/rik/dto/rik-admin-config.dto.ts
+milk-coupon: apps/api/src/rik/repositories/entitlement-config-admin.repository.ts
+milk-coupon: apps/api/src/rik/repositories/entitlement-config.repository.ts
+milk-coupon: apps/api/src/rik/rik-admin.controller.ts
+milk-coupon: apps/api/src/rik/rik-catalogue.integration.spec.ts
+milk-coupon: apps/api/src/rik/rik-category-images.integration.spec.ts
+milk-coupon: apps/api/src/rik/rik-dry-images.integration.spec.ts
+milk-coupon: apps/api/src/rik/rik-eligibility-import.integration.spec.ts
+milk-coupon: apps/api/src/rik/rik-fresh-images.integration.spec.ts
+milk-coupon: apps/api/src/rik/rik-fresh-milk-coupon.integration.spec.ts
+milk-coupon: apps/api/src/rik/rik-fresh-staple-images.integration.spec.ts
+milk-coupon: apps/api/src/rik/rik-fulfillment.integration.spec.ts
+milk-coupon: apps/api/src/rik/rik-issue-vouchers.integration.spec.ts
+milk-coupon: apps/api/src/rik/rik-issue-windows.integration.spec.ts
+milk-coupon: apps/api/src/rik/rik-officers.integration.spec.ts
+milk-coupon: apps/api/src/rik/rik.controller.ts
+milk-coupon: apps/api/src/rik/services/rik-admin-config.service.ts
+milk-coupon: apps/api/src/rik/services/rik-entitlement.service.ts
+milk-coupon: apps/api/src/rik/services/rik-fulfillment.service.ts
+milk-coupon: apps/api/src/rik/services/rik-selection-validation.service.ts
+pif: apps/customer-web/public/catalogue/pif/category/README.md
+pif: apps/customer-web/public/catalogue/pif/category/atta-rice-grains.png
+pif: apps/customer-web/public/catalogue/pif/category/dairy-milk-eggs.png
+pif: apps/customer-web/public/catalogue/pif/category/dals-pulses-beans.png
+pif: apps/customer-web/public/catalogue/pif/category/detergents-dishwashing.png
+pif: apps/customer-web/public/catalogue/pif/category/oils-ghee.png
+pif: apps/customer-web/public/catalogue/pif/category/salt-sugar-sweeteners.png
+pif: apps/customer-web/public/catalogue/pif/category/snacks-biscuits-chocolates.png
+pif: apps/customer-web/public/catalogue/pif/category/tea-coffee.png
+fresh-staple-assets: apps/customer-web/public/catalogue/rik/fresh-staples/README.md
+fresh-staple-assets: apps/customer-web/public/catalogue/rik/fresh-staples/eggs__table.png
+fresh-staple-assets: apps/customer-web/public/catalogue/rik/fresh-staples/meat__chicken-fowl.png
+fresh-staple-assets: apps/customer-web/public/catalogue/rik/fresh-staples/meat__fish.png
+fresh-staple-assets: apps/customer-web/public/catalogue/rik/fresh-staples/meat__mutton.png
+fresh-staple-assets: apps/customer-web/public/catalogue/rik/fresh-staples/milk__fresh-500ml-coupon.png
+fresh-staple-assets: apps/customer-web/public/catalogue/rik/fresh-staples/onion__fresh.png
+fresh-staple-assets: apps/customer-web/public/catalogue/rik/fresh-staples/potato__fresh.png
+pif: apps/customer-web/src/design-system/CategoryCard.tsx
+pif: apps/customer-web/src/design-system/StickyCartBar.tsx
+pif: apps/customer-web/src/index.css
+pif: apps/customer-web/src/lib/api/pif-api.ts
+pif: apps/customer-web/src/lib/api/pif-media-url.test.ts
+milk-coupon: apps/customer-web/src/lib/api/rik-entitlement-api.ts
+milk-coupon: apps/customer-web/src/lib/api/rik-issue-voucher-api.ts
+pif: apps/customer-web/src/lib/cart/usePifCartTotal.ts
+pif: apps/customer-web/src/routes/AppLayout.tsx
+pif: apps/customer-web/src/routes/pif/PifHomePage.tsx
+pif: apps/customer-web/src/routes/pif/pif-shop.test.tsx
+milk-coupon: apps/customer-web/src/routes/rik/RikIssueVoucherPage.tsx
+milk-coupon: apps/customer-web/src/routes/rik/ration/RationCategoryPage.tsx
+milk-coupon: apps/customer-web/src/routes/rik/ration/RationCheckoutPage.tsx
+milk-coupon: apps/customer-web/src/routes/rik/ration/know-your-ration.test.tsx
+milk-coupon: apps/customer-web/src/routes/rik/ration/ration-checkout.test.tsx
+pif: apps/customer-web/tailwind.config.js
+pif: database/demo/esamagri-demo-db.sql.gz
+fresh-staple-assets: database/migrations/0052_rik_fresh_staple_images.sql
+milk-coupon: database/migrations/0053_rik_fresh_milk_coupon.sql
+pif: database/migrations/0054_pif_category_images.sql

@@ -1,0 +1,214 @@
+
+========================================================================
+GROCERS — 19 main categories
+========================================================================
+
+OK  1. Rice, Atta & Flour    [rice-atta-and-flour]
+         1.1  Rice                   [rice]
+         1.2  Basmati Rice           [basmati-rice]
+         1.3  Sona Masoori           [sona-masoori]
+         1.4  Brown Rice             [brown-rice]
+         1.5  Atta                   [atta]
+         1.6  Maida                  [maida]
+         1.7  Besan                  [besan]
+         1.8  Rava/Sooji             [rava-sooji]
+         1.9  Multigrain Flour       [multigrain-flour]
+
+OK  2. Dal & Pulses    [dal-and-pulses]
+         2.1  Toor Dal               [toor-dal]
+         2.2  Moong Dal              [moong-dal]
+         2.3  Masoor Dal             [masoor-dal]
+         2.4  Urad Dal               [urad-dal]
+         2.5  Chana Dal              [chana-dal]
+         2.6  Rajma                  [rajma]
+         2.7  Kabuli Chana           [kabuli-chana]
+         2.8  Green Gram             [green-gram]
+         2.9  Black Gram             [black-gram]
+
+OK  3. Oil & Ghee    [oil-and-ghee]
+         3.1  Sunflower Oil          [sunflower-oil]
+         3.2  Groundnut Oil          [groundnut-oil]
+         3.3  Rice Bran Oil          [rice-bran-oil]
+         3.4  Palm Oil               [palm-oil]
+         3.5  Coconut Oil            [coconut-oil]
+         3.6  Sesame Oil             [sesame-oil]
+         3.7  Ghee                   [ghee]
+
+OK  4. Salt, Sugar & Spices    [salt-sugar-and-spices]
+         4.1  Salt                   [salt]
+         4.2  Sugar                  [sugar]
+         4.3  Jaggery                [jaggery]
+         4.4  Chilli Powder          [chilli-powder]
+         4.5  Turmeric               [turmeric]
+         4.6  Coriander Powder       [coriander-powder]
+         4.7  Pepper                 [pepper]
+         4.8  Whole Spices           [whole-spices]
+         4.9  Garam Masala           [garam-masala]
+         4.10 Curry Masala           [curry-masala]
+
+OK  5. Dairy & Eggs    [dairy-and-eggs]
+         5.1  Milk                   [milk]
+         5.2  Curd                   [curd]
+         5.3  Buttermilk             [buttermilk]
+         5.4  Paneer                 [paneer]
+         5.5  Butter                 [butter]
+         5.6  Cheese                 [cheese]
+         5.7  Cream                  [cream]
+         5.8  Lassi                  [lassi]
+         5.9  Eggs                   [eggs]
+
+OK  6. Bakery    [bakery]
+         6.1  Bread                  [bread]
+         6.2  Buns                   [buns]
+         6.3  Cakes                  [cakes]
+         6.4  Rusk                   [rusk]
+         6.5  Cookies                [cookies]
+         6.6  Pav                    [pav]
+         6.7  Bakery Snacks          [bakery-snacks]
+
+OK  7. Biscuits & Snacks    [biscuits-and-snacks]
+         7.1  Biscuits               [biscuits]
+         7.2  Chips                  [chips]
+         7.3  Namkeen                [namkeen]
+         7.4  Mixtures               [mixtures]
+         7.5  Popcorn                [popcorn]
+         7.6  Fryums                 [fryums]
+
+OK  8. Chocolates & Confectionery    [chocolates-and-confectionery]
+         8.1  Chocolates             [chocolates]
+         8.2  Candies                [candies]
+         8.3  Toffees                [toffees]
+         8.4  Wafers                 [wafers]
+         8.5  Chewing Gum            [chewing-gum]
+
+OK  9. Tea & Coffee    [tea-and-coffee]
+         9.1  Tea                    [tea]
+         9.2  Green Tea              [green-tea]
+         9.3  Coffee                 [coffee]
+         9.4  Instant Coffee         [instant-coffee]
+         9.5  Tea Premixes           [tea-premixes]
+         9.6  Health Drinks          [health-drinks]
+
+OK 10. Beverages    [beverages]
+         10.1  Soft Drinks            [soft-drinks]
+         10.2  Juices                 [juices]
+         10.3  Energy Drinks          [energy-drinks]
+         10.4  Fruit Drinks           [fruit-drinks]
+         10.5  Packaged Water         [packaged-water]
+         10.6  Soda                   [soda]
+
+OK 11. Instant & Packaged Foods    [instant-and-packaged-foods]
+         11.1  Noodles                [noodles]
+         11.2  Pasta                  [pasta]
+         11.3  Vermicelli             [vermicelli]
+         11.4  Ready-to-Eat           [ready-to-eat]
+         11.5  Ready-to-Cook          [ready-to-cook]
+         11.6  Soup                   [soup]
+         11.7  Instant Mixes          [instant-mixes]
+
+OK 12. Breakfast & Cereals    [breakfast-and-cereals]
+         12.1  Oats                   [oats]
+         12.2  Corn Flakes            [corn-flakes]
+         12.3  Muesli                 [muesli]
+         12.4  Cereals                [cereals]
+         12.5  Poha                   [poha]
+         12.6  Dalia                  [dalia]
+         12.7  Breakfast Mixes        [breakfast-mixes]
+
+OK 13. Sauces, Pickles & Spreads    [sauces-pickles-and-spreads]
+         13.1  Pickles                [pickles]
+         13.2  Ketchup                [ketchup]
+         13.3  Sauces                 [sauces]
+         13.4  Mayonnaise             [mayonnaise]
+         13.5  Jam                    [jam]
+         13.6  Honey                  [honey]
+         13.7  Peanut Butter          [peanut-butter]
+         13.8  Chutney                [chutney]
+
+OK 14. Frozen & Ice Cream    [frozen-and-ice-cream]
+         14.1  Ice Cream              [ice-cream]
+         14.2  Kulfi                  [kulfi]
+         14.3  Frozen Vegetables      [frozen-vegetables]
+         14.4  Frozen Snacks          [frozen-snacks]
+         14.5  Frozen Paratha         [frozen-paratha]
+
+OK 15. Home Cleaning    [home-cleaning]
+         15.1  Detergent              [detergent]
+         15.2  Dishwash               [dishwash]
+         15.3  Floor Cleaner          [floor-cleaner]
+         15.4  Toilet Cleaner         [toilet-cleaner]
+         15.5  Glass Cleaner          [glass-cleaner]
+         15.6  Fabric Care            [fabric-care]
+         15.7  Garbage Bags           [garbage-bags]
+
+OK 16. Personal Care    [personal-care]
+         16.1  Bath Soap              [bath-soap]
+         16.2  Shampoo                [shampoo]
+         16.3  Hair Oil               [hair-oil]
+         16.4  Toothpaste             [toothpaste]
+         16.5  Toothbrush             [toothbrush]
+         16.6  Face Wash              [face-wash]
+         16.7  Creams                 [creams]
+         16.8  Deodorants             [deodorants]
+         16.9  Shaving                [shaving]
+
+OK 17. Baby Care    [baby-care]
+         17.1  Diapers                [diapers]
+         17.2  Baby Food              [baby-food]
+         17.3  Baby Soap              [baby-soap]
+         17.4  Baby Shampoo           [baby-shampoo]
+         17.5  Baby Lotion            [baby-lotion]
+         17.6  Baby Wipes             [baby-wipes]
+
+OK 18. Pooja & Household Essentials    [pooja-and-household-essentials]
+         18.1  Agarbatti              [agarbatti]
+         18.2  Camphor                [camphor]
+         18.3  Pooja Oil              [pooja-oil]
+         18.4  Wicks                  [wicks]
+         18.5  Match Boxes            [match-boxes]
+         18.6  Batteries              [batteries]
+         18.7  Tissue                 [tissue]
+         18.8  Aluminium Foil         [aluminium-foil]
+
+OK 19. Pet Care    [pet-care]
+         19.1  Dog Food               [dog-food]
+         19.2  Cat Food               [cat-food]
+         19.3  Pet Treats             [pet-treats]
+         19.4  Pet Accessories        [pet-accessories]
+
+   mains: 19 (approved 19)
+   subcategories: 135 (approved 135)
+
+========================================================================
+FRESH MART — 2 main categories
+========================================================================
+
+OK  1. Vegetables    [vegetables]
+         1.1  Fresh Vegetables       [fresh-vegetables]
+         1.2  Leafy Vegetables       [leafy-vegetables]
+         1.3  Roots & Tubers         [roots-and-tubers]
+         1.4  Onions & Potatoes      [onions-and-potatoes]
+         1.5  Herbs & Coriander      [herbs-and-coriander]
+         1.6  Cut Vegetables         [cut-vegetables]
+
+OK  2. Fruits    [fruits]
+         2.1  Exotic Fruits          [exotic-fruits]
+         2.2  Seasonal Fruits        [seasonal-fruits]
+
+   mains: 2 (approved 2)
+   subcategories: 8 (approved 8)
+
+========================================================================
+TARGETED CHECKS
+========================================================================
+   'Tea & Coffee' is its own main category: True
+   'Beverages' is a separate main category: True
+   they are different entries: True
+   forbidden substitute 'Health & Wellness' absent: True
+   forbidden substitute 'Stationery' absent: True
+   forbidden substitute 'Other Essentials' absent: True
+   no combined Tea/Beverages category: True
+
+========================================================================
+RESULT: the implemented tree matches the approved list exactly.
+        19 mains / 135 subcategories, 2 mains / 8 subcategories.

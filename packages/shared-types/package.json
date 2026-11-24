@@ -1,0 +1,14 @@
+{
+  "name": "@esamagri/shared-types",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Types, enums, and permission/role constants shared by apps/api, apps/customer-web, and apps/admin-web. Single source of truth so a change here is a compile error everywhere it matters, not a silent drift.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}

@@ -1,0 +1,5 @@
+# Store every file exactly as it is on disk: no line-ending conversion.
+# The migration files are recorded by SHA-256 in MIGRATION_REGISTER.xlsx, and the
+# shell scripts in ops/ must keep Unix line endings. Byte-for-byte storage keeps
+# both true on every machine, whatever that machine's own Git settings are.
+* -text

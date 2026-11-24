@@ -1,0 +1,45 @@
+{
+  "name": "@esamagri/customer-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "e Samagri customer application — React, TypeScript, Vite, PWA, mobile-first / Android portrait-first. Deployed to Vercel. RIK/PIF business screens land in later Phase 3B/3C stages; this is the STEP 3 build-tooling foundation plus the STEP 9 basic app shell.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "preview:lan": "vite preview --port 5175 --strictPort --host 0.0.0.0",
+    "typecheck": "tsc -b tsconfig.app.json && tsc -p tsconfig.test.json --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@esamagri/config": "0.1.0",
+    "@esamagri/shared-types": "0.1.0",
+    "lucide-react": "0.544.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.3"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "jsdom": "^25.0.1",
+    "postcss": "^8.4.45",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.5.4",
+    "vite": "^7.1.0",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^3.2.7"
+  }
+}

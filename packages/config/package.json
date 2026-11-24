@@ -1,0 +1,27 @@
+{
+  "name": "@esamagri/config",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Environment-variable schemas and fail-fast loaders shared by apps/api, apps/customer-web, and apps/admin-web (Phase 3B STEP 2). No app should read process.env / import.meta.env directly for a required setting — it goes through the matching loader here, which validates shape and fails immediately with a clear error instead of the app starting in a half-configured state. This package holds no secret values itself, only their names, types, and validation rules.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
+    "./api-env": { "types": "./src/api-env.ts", "default": "./src/api-env.ts" },
+    "./customer-web-env": { "types": "./src/customer-web-env.ts", "default": "./src/customer-web-env.ts" },
+    "./admin-web-env": { "types": "./src/admin-web-env.ts", "default": "./src/admin-web-env.ts" },
+    "./env-utils": { "types": "./src/env-utils.ts", "default": "./src/env-utils.ts" }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/node": "^20.14.0",
+    "vitest": "^5.0.0"
+  }
+}

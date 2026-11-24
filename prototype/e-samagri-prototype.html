@@ -1,0 +1,1499 @@
+<title>e Samagri Prototype</title>
+<style>
+  /* ---------------------------------------------------------------
+     e Samagri — STEP 8 interactive click-through prototype.
+     Single, intentionally light-themed "device mockup" world (like a
+     product shot): the phone frame renders the real, approved app
+     design exactly as built in the production codebase, so it is not
+     re-themed for the viewer's dark/light preference. The backdrop
+     paints its own explicit color for the same reason. Every color
+     below is the exact palette sampled from the two FINAL approved
+     brand assets (logo + UI reference) — see tailwind.config.js.
+     ------------------------------------------------------------- */
+  :root{
+    --forest:#10282C; --forest-dark:#0A1B1E;
+    --green:#026A2E; --green-dark:#014D22; --green-light:#EBFBF1;
+    --blue:#0072E5; --blue-dark:#0056BB; --blue-light:#E8F5FD;
+    --amber:#F2994A; --amber-dark:#C96F1F; --amber-light:#FFF3E8;
+    --purple:#5B2FE0; --purple-light:#F1EDFE;
+    --danger:#DE292E; --danger-light:#FCEEEB;
+    --slate-50:#F7F9FA; --slate-100:#EEF2F3; --slate-200:#DFE6E8;
+    --slate-400:#9BA8AC; --slate-500:#71828687; --slate-600:#4B5B5E;
+    --slate-900:#16262A;
+    --backdrop:#E7ECEC; --backdrop-fg:#16262A;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--backdrop);
+    color:var(--backdrop-fg);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    min-height:100vh;
+    padding:24px 16px 48px;
+  }
+
+  /* ---------- page chrome (outside the phone) ---------- */
+  .wrap{max-width:1100px;margin:0 auto;}
+  .masthead{max-width:760px;margin:0 auto 22px;text-align:center;}
+  .masthead .eyebrow{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--green-dark);background:var(--green-light);
+    border:1px solid #cdeedb;border-radius:999px;padding:5px 12px;margin-bottom:12px;
+  }
+  .masthead .eyebrow svg{width:12px;height:12px;flex:none;}
+  .masthead h1{font-size:clamp(22px,4vw,28px);margin:0 0 8px;letter-spacing:-.01em;text-wrap:balance;}
+  .masthead p{font-size:14.5px;line-height:1.55;color:var(--slate-600);margin:0 auto;max-width:560px;}
+  .masthead .scope{
+    margin-top:14px;font-size:12.5px;color:var(--slate-500);
+    display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  }
+  .masthead .scope span{
+    background:#fff;border:1px solid var(--slate-200);border-radius:8px;padding:4px 9px;
+  }
+
+  .stage{
+    display:grid;grid-template-columns:minmax(0,390px);justify-content:center;gap:28px;
+  }
+  @media (min-width:880px){
+    .stage{grid-template-columns:390px minmax(0,320px);align-items:start;}
+  }
+
+  /* ---------- phone frame (390px = real Android/iPhone logical width) ---------- */
+  .phone-col{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .phone-col .col-label{font-size:12px;font-weight:700;color:var(--slate-500);letter-spacing:.03em;text-align:center;}
+  .phone-col .col-label em{display:block;font-style:normal;font-weight:600;color:var(--amber-dark);font-size:11px;margin-top:3px;}
+  .phone{
+    width:100%;max-width:390px;min-height:866px;
+    background:var(--forest-dark);
+    border-radius:44px;padding:11px;
+    box-shadow:0 1px 2px rgba(16,40,44,.08), 0 24px 48px -16px rgba(16,40,44,.4);
+  }
+  .phone-screen{
+    position:relative;width:100%;min-height:844px;background:#fff;border-radius:34px;
+    overflow:hidden;display:flex;flex-direction:column;
+  }
+  .notch{
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:36%;height:22px;background:var(--forest-dark);border-radius:0 0 14px 14px;z-index:30;
+  }
+
+  /* Screens sit in normal document flow: content sets the height, the page scrolls
+     naturally, and nothing is trapped below an un-scrollable fold (spec CR-1). */
+  .screen{display:none;flex-direction:column;background:#fff;flex:1;min-height:844px;}
+  .screen.active{display:flex;}
+  .screen-scroll{flex:1;}
+
+  /* ---------- shared app-header ---------- */
+  .app-header{
+    flex:none;padding:14px 16px 12px;padding-top:34px;
+    display:flex;align-items:center;gap:10px;background:#fff;
+    border-bottom:1px solid var(--slate-100);position:relative;z-index:5;
+  }
+  /* home header: taller, logo-led, as in the approved reference */
+  .app-header.home-header{padding:30px 14px 12px;border-bottom-color:var(--slate-100);}
+  /* The approved logo asset is a square lockup (emblem + wordmark + tagline +
+     feature row). It is used exactly as supplied — never cropped or redrawn —
+     so it is scaled up here to read at a size comparable to the reference. */
+  .app-header.home-header .brand-logo{height:84px;width:auto;display:block;}
+  .app-header.tone-forest{background:var(--forest);color:#fff;border-bottom-color:transparent;}
+  .app-header.tone-blue{background:var(--blue);color:#fff;border-bottom-color:transparent;}
+  .app-header.tone-green{background:var(--green);color:#fff;border-bottom-color:transparent;}
+  .hbtn{
+    width:40px;height:40px;border-radius:12px;border:none;background:transparent;
+    display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer;color:var(--forest);
+  }
+  .tone-forest .hbtn,.tone-blue .hbtn,.tone-green .hbtn{background:rgba(255,255,255,.16);color:inherit;width:34px;height:34px;}
+  .hbtn svg{width:22px;height:22px;}
+  .tone-forest .hbtn svg,.tone-blue .hbtn svg,.tone-green .hbtn svg{width:17px;height:17px;}
+  .app-header h2{font-size:17px;margin:0;font-weight:700;flex:1;letter-spacing:-.01em;}
+  .app-header .sub{font-size:11px;opacity:.85;font-weight:500;}
+
+  /* ---------- bottom nav ---------- */
+  .bottom-nav{
+    flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+    border-top:1px solid var(--slate-100);background:#fff;padding:8px 6px 14px;
+    position:sticky;bottom:0;z-index:6;
+  }
+  .nav-item{
+    display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;
+    padding:6px 2px 8px;cursor:pointer;color:var(--slate-400);font-size:11.5px;font-weight:600;
+    position:relative;font-family:inherit;
+  }
+  .nav-item svg{width:23px;height:23px;}
+  .nav-item.on{color:var(--green);font-weight:800;}
+  .nav-item.on::after{
+    content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    width:26px;height:3px;border-radius:3px;background:var(--green);
+  }
+  .nav-item .dot{
+    position:relative;
+  }
+  .nav-item .badge{
+    position:absolute;top:-3px;right:-7px;background:var(--danger);color:#fff;
+    font-size:8.5px;font-weight:800;border-radius:999px;min-width:13px;height:13px;
+    display:flex;align-items:center;justify-content:center;padding:0 2px;
+  }
+
+  /* ---------- preview-data caption (mirrors the real app's <PreviewDataNote/>) ---------- */
+  .preview-note{
+    display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--amber-dark);
+    background:var(--amber-light);border:1px solid #f7dcb8;border-radius:8px;
+    padding:6px 9px;margin:0 14px 10px;
+  }
+  .preview-note svg{width:12px;height:12px;flex:none;}
+
+  /* ---------- generic building blocks ---------- */
+  .px{padding-left:16px;padding-right:16px;}
+  .card{
+    background:#fff;border:1px solid var(--slate-100);border-radius:16px;padding:12px;
+  }
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    border:none;border-radius:13px;font-weight:800;font-size:14.5px;cursor:pointer;
+    padding:14px 16px;width:100%;font-family:inherit;
+  }
+  .btn.blue{background:var(--blue);color:#fff;}
+  .btn.green{background:var(--green);color:#fff;}
+  .btn.ghost{background:var(--slate-100);color:var(--forest);}
+  .btn.outline-blue{background:#fff;color:var(--blue);border:1.5px solid var(--blue);}
+  .btn.outline-green{background:#fff;color:var(--green);border:1.5px solid var(--green);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .btn.sm{padding:7px 10px;font-size:12px;border-radius:9px;}
+
+  input.field{
+    width:100%;border:1.5px solid var(--slate-200);border-radius:12px;padding:13px 14px;
+    font-size:15px;font-family:inherit;color:var(--forest);background:#fff;
+  }
+  input.field:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:transparent;}
+  label.flabel{font-size:13px;font-weight:700;color:var(--forest);display:block;margin-bottom:5px;}
+
+  .badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;letter-spacing:.02em;border-radius:999px;padding:2.5px 7px;text-transform:uppercase;}
+  .badge.rik{background:var(--blue-light);color:var(--blue-dark);}
+  .badge.pif{background:var(--green-light);color:var(--green-dark);}
+  .badge.urgent{background:var(--danger-light);color:var(--danger);}
+  .badge.high{background:var(--amber-light);color:var(--amber-dark);}
+  .badge.normal{background:var(--slate-100);color:var(--slate-600);}
+
+  h3.h{font-size:15px;font-weight:800;color:var(--forest);letter-spacing:-.005em;margin:0;}
+  .muted{color:var(--slate-500);}
+
+  /* module entry cards (home) */
+  .mod-card{
+    border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px;
+    color:#fff;position:relative;overflow:hidden;cursor:pointer;border:none;text-align:left;font-family:inherit;
+  }
+  .mod-card.rik{background:linear-gradient(135deg,var(--blue),var(--blue-dark));}
+  .mod-card.pif{background:linear-gradient(135deg,var(--green),var(--green-dark));}
+  .mod-card .mtag{font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.85;}
+  .mod-card h4{margin:0;font-size:16.5px;font-weight:800;}
+  .mod-card p{margin:0;font-size:11.5px;opacity:.9;line-height:1.4;}
+  .mod-card .cta{
+    margin-top:2px;font-size:11.5px;font-weight:800;display:inline-flex;align-items:center;gap:4px;
+  }
+
+  .qa-tile{
+    display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;
+    background:#fff;border:1px solid var(--slate-100);border-radius:16px;padding:14px 6px 12px;
+    cursor:pointer;font-family:inherit;box-shadow:0 1px 2px rgba(16,40,44,.04);
+  }
+  .qa-tile .ic{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none;}
+  .qa-tile .ic.round{border-radius:999px;}
+  .qa-tile .ic svg{width:22px;height:22px;}
+  .qa-tile span{font-size:11.5px;font-weight:700;color:var(--forest);line-height:1.25;}
+
+  /* ---------- hero banner (approved UI reference) ---------- */
+  .hero{
+    display:flex;align-items:center;gap:4px;position:relative;overflow:hidden;
+    background:linear-gradient(135deg,#DFF5E9 0%,#EFFAF4 50%,#FBFEFC 100%);
+    border:1px solid #d7f0e2;border-radius:20px;padding:16px 12px 16px 16px;min-height:172px;
+  }
+  .hero-copy{flex:0 0 48%;min-width:0;display:flex;flex-direction:column;justify-content:center;}
+  .hero-copy h3{
+    margin:0;font-size:20px;line-height:1.22;color:var(--forest-dark);font-weight:800;white-space:nowrap;
+    letter-spacing:-.02em;
+  }
+  .hero-rule{display:block;width:44px;height:4px;background:var(--green);border-radius:3px;margin-top:12px;}
+  .hero-art{flex:1 1 28%;min-width:0;display:flex;align-items:center;justify-content:center;}
+  .hero-art svg{width:100%;max-width:118px;height:auto;display:block;}
+  .hero-tags{
+    flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:2px;
+    font-family:'Caveat','Segoe Script','Bradley Hand',cursive;font-size:18px;line-height:1.15;
+    color:var(--forest);padding-right:2px;
+  }
+
+  /* ---------- RIK / PIF module cards — the main decision point ---------- */
+  .mp-card{
+    border-radius:20px;padding:18px 14px 16px;display:flex;flex-direction:column;align-items:center;
+    cursor:pointer;border:1px solid transparent;text-align:center;font-family:inherit;
+    box-shadow:0 1px 3px rgba(16,40,44,.05);
+  }
+  .mp-card.rik{background:var(--blue-light);border-color:#cfe7fa;}
+  .mp-card.pif{background:var(--green-light);border-color:#cbebd8;}
+  .mp-ic{width:66px;height:66px;border-radius:999px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+  .mp-card.rik .mp-ic{background:var(--blue);box-shadow:0 4px 12px -2px rgba(0,114,229,.45);}
+  .mp-card.pif .mp-ic{background:var(--green);box-shadow:0 4px 12px -2px rgba(2,106,46,.4);}
+  .mp-ic svg{width:32px;height:32px;}
+  .mp-card h4{margin:0;font-size:24px;font-weight:800;line-height:1.05;letter-spacing:-.02em;}
+  .mp-card.rik h4{color:var(--blue);}
+  .mp-card.pif h4{color:var(--green);}
+  .mp-sub{font-size:13px;font-weight:700;margin-top:2px;}
+  .mp-card.rik .mp-sub{color:var(--blue);}
+  .mp-card.pif .mp-sub{color:var(--green-dark);}
+  .mp-feats{
+    display:flex;flex-direction:column;gap:10px;width:100%;text-align:left;
+    padding-top:12px;margin-top:12px;border-top:1px solid rgba(16,40,44,.1);margin-bottom:14px;
+  }
+  .mp-feat{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--slate-900);}
+  .mp-feat svg{width:17px;height:17px;flex:none;}
+  .mp-card.rik .mp-feat svg{color:var(--blue);}
+  .mp-card.pif .mp-feat svg{color:var(--green);}
+  .mp-cta{
+    display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:800;color:#fff;
+    border-radius:12px;padding:13px 10px;width:100%;justify-content:center;margin-top:auto;
+  }
+  .mp-card.rik .mp-cta{background:var(--blue-dark);}
+  .mp-card.pif .mp-cta{background:var(--green-dark);}
+
+  /* announcements panel (View All + per-type avatar + date + priority badge) */
+  .ann-panel{background:#F4FBF7;border:1px solid #dff2e8;border-radius:20px;padding:14px 12px 8px;}
+  .ann-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding:0 2px;}
+  .ann-head .ann-title{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;color:var(--forest-dark);letter-spacing:-.01em;}
+  .ann-head .ann-title svg{width:22px;height:22px;color:var(--green);}
+  .ann-viewall{
+    border:none;background:none;color:var(--green-dark);font-size:13px;font-weight:700;
+    cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:3px;padding:4px;
+  }
+  .ann-row{
+    display:flex;gap:11px;align-items:flex-start;padding:11px 10px;margin-bottom:8px;
+    background:#fff;border:1px solid var(--slate-100);border-radius:14px;text-align:left;
+    width:100%;font-family:inherit;cursor:pointer;
+  }
+  .ann-row.urgent{background:#FEF4F3;border-color:#f8ddd9;}
+  .ann-row .aic{width:38px;height:38px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;}
+  .ann-row .aic svg{width:20px;height:20px;color:#fff;}
+  .ann-row h5{font-size:13.5px;margin:0 0 3px;color:var(--forest-dark);font-weight:800;line-height:1.25;}
+  .ann-row p{font-size:12px;margin:0;color:var(--slate-600);line-height:1.4;}
+  .ann-row .meta{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+  .ann-row .meta .date{font-size:10.5px;color:var(--slate-500);white-space:nowrap;font-weight:600;}
+  .ann-row .meta .chev{color:var(--slate-400);font-size:16px;line-height:1;}
+  /* order fact list + line items (spec RIK-5 / PIF-8) */
+  .facts{display:flex;flex-direction:column;gap:0;margin:0 0 16px;border:1px solid var(--slate-100);border-radius:14px;overflow:hidden;}
+  .facts > div{display:flex;justify-content:space-between;gap:14px;padding:11px 13px;border-bottom:1px solid var(--slate-100);}
+  .facts > div:last-child{border-bottom:none;}
+  .facts dt{margin:0;font-size:12px;color:var(--slate-500);font-weight:600;flex:none;}
+  .facts dd{margin:0;font-size:12.5px;color:var(--forest-dark);font-weight:700;text-align:right;min-width:0;word-break:break-word;}
+  .line-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--slate-100);}
+  .line-row:last-child{border-bottom:none;}
+  .line-row .ln{flex:1;min-width:0;font-size:12.5px;font-weight:700;color:var(--forest-dark);}
+  .line-row .ln em{display:block;font-style:normal;font-size:11px;font-weight:500;color:var(--slate-500);margin-top:1px;}
+  .line-row .lq{font-size:12.5px;font-weight:700;color:var(--slate-600);font-variant-numeric:tabular-nums;}
+  .line-row .lp{font-size:12.5px;font-weight:800;color:var(--forest-dark);min-width:56px;text-align:right;font-variant-numeric:tabular-nums;}
+
+  .avail{font-size:11px;font-weight:700;margin-top:2px;}
+  .avail.in{color:var(--green);}
+  .avail.low{color:var(--amber-dark);}
+  .avail.out{color:var(--danger);}
+
+  /* subcategory chips (spec PIF-3) */
+  .sub-chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:12px;margin-bottom:2px;scrollbar-width:none;}
+  .sub-chips::-webkit-scrollbar{display:none;}
+  .sub-chip{
+    flex:none;border:1px solid var(--slate-200);background:#fff;color:var(--slate-600);
+    border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;
+  }
+  .sub-chip.on{background:var(--green);border-color:var(--green);color:#fff;}
+
+  /* category tile */
+  .cat-tile{
+    border-radius:13px;padding:10px;text-align:center;cursor:pointer;border:none;font-family:inherit;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+  }
+  .cat-tile .ic{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;}
+  .cat-tile span{font-size:12px;font-weight:700;}
+
+  /* product card */
+  .p-card{
+    background:#fff;border:1px solid var(--slate-100);border-radius:14px;overflow:hidden;cursor:pointer;
+    display:flex;flex-direction:column;
+  }
+  .p-card .thumb{
+    aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:46px;
+  }
+  .p-card .body{padding:8px 9px 9px;display:flex;flex-direction:column;gap:3px;flex:1;}
+  .p-card .name{font-size:13px;font-weight:700;color:var(--forest);line-height:1.25;}
+  .p-card .unit{font-size:11.5px;color:var(--slate-500);}
+  .p-card .price-row{display:flex;align-items:baseline;gap:5px;margin-top:1px;}
+  .p-card .price{font-size:14.5px;font-weight:800;color:var(--forest);}
+  .p-card .mrp{font-size:11.5px;color:var(--slate-400);text-decoration:line-through;}
+  .p-card .ent{font-size:11.5px;color:var(--blue-dark);font-weight:700;}
+  .p-card .foot{margin-top:auto;padding-top:6px;}
+
+  .add-btn{
+    width:100%;border:1.5px solid var(--blue);color:var(--blue);background:#fff;border-radius:9px;
+    font-size:12.5px;font-weight:800;padding:9px 4px;cursor:pointer;font-family:inherit;
+  }
+  .add-btn.pif{border-color:var(--green);color:var(--green);}
+  .qty-stepper{
+    display:flex;align-items:center;justify-content:space-between;background:var(--blue);
+    border-radius:9px;padding:2px;
+  }
+  .qty-stepper.pif{background:var(--green);}
+  .qty-stepper button{width:26px;height:26px;border:none;background:none;color:#fff;font-size:14px;font-weight:800;cursor:pointer;border-radius:6px;}
+  .qty-stepper span{color:#fff;font-size:13px;font-weight:800;}
+
+  /* entitlement card */
+  .ent-card{background:var(--blue-light);border-radius:16px;padding:13px;}
+  .ent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;}
+  .ent-grid .stat dt{font-size:10px;color:var(--blue-dark);font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin:0 0 2px;}
+  .ent-grid .stat dd{font-size:16.5px;font-weight:800;color:var(--forest);margin:0;font-variant-numeric:tabular-nums;}
+
+  /* announcement */
+  .ann{display:flex;gap:9px;padding:10px;border-radius:13px;background:var(--slate-50);border:1px solid var(--slate-100);}
+  .ann .aic{width:26px;height:26px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;}
+  .ann h5{font-size:12px;margin:0 0 2px;color:var(--forest);font-weight:800;}
+  .ann p{font-size:10.5px;margin:0;color:var(--slate-600);line-height:1.4;}
+
+  /* stepper (order status) */
+  .stepper{display:flex;flex-direction:column;gap:0;}
+  .step{display:flex;gap:10px;}
+  .step .rail{display:flex;flex-direction:column;align-items:center;}
+  .step .node{width:18px;height:18px;border-radius:999px;border:3px solid var(--slate-200);background:#fff;flex:none;}
+  .step .line{width:2px;flex:1;background:var(--slate-200);min-height:22px;}
+  .step.done .node{border-color:var(--green);background:var(--green);}
+  .step.done .line{background:var(--green);}
+  .step.current .node{border-color:var(--blue);background:var(--blue);box-shadow:0 0 0 3px var(--blue-light);}
+  .step .content{padding-bottom:18px;}
+  .step .content h6{margin:0 0 2px;font-size:13.5px;font-weight:700;color:var(--forest);}
+  .step .content p{margin:0;font-size:12px;color:var(--slate-500);}
+
+  /* cart row */
+  .cart-row{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--slate-100);}
+  .cart-row .thumb{width:50px;height:50px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none;}
+  .cart-row .info{flex:1;min-width:0;}
+  .cart-row .info .n{font-size:13.5px;font-weight:700;color:var(--forest);}
+  .cart-row .info .u{font-size:11.5px;color:var(--slate-500);}
+  .cart-row .price{font-size:13.5px;font-weight:800;color:var(--forest);white-space:nowrap;}
+
+  .sum-row{display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;color:var(--slate-600);}
+  .sum-row.total{font-size:16px;font-weight:800;color:var(--forest);border-top:1px dashed var(--slate-200);margin-top:6px;padding-top:9px;}
+
+  .empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:38px 20px;}
+  .empty .ic{width:60px;height:60px;border-radius:16px;background:var(--slate-100);display:flex;align-items:center;justify-content:center;}
+  .empty h4{margin:0;font-size:15px;color:var(--forest);}
+  .empty p{margin:0;font-size:13px;color:var(--slate-500);max-width:200px;line-height:1.4;}
+
+  .seg{display:flex;background:var(--slate-100);border-radius:11px;padding:3px;gap:2px;}
+  .seg button{flex:1;border:none;background:none;border-radius:9px;font-size:13px;font-weight:700;padding:10px 4px;color:var(--slate-600);cursor:pointer;font-family:inherit;}
+  .seg button.on{background:#fff;color:var(--forest);box-shadow:0 1px 2px rgba(16,40,44,.1);}
+
+  .toast{
+    position:fixed;left:50%;transform:translateX(-50%) translateY(8px);
+    width:min(340px,calc(100vw - 48px));bottom:96px;background:var(--forest);color:#fff;
+    border-radius:12px;padding:13px 15px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;
+    box-shadow:0 10px 24px -8px rgba(16,40,44,.4);opacity:0;transform:translateY(8px);
+    transition:opacity .22s ease, transform .22s ease;pointer-events:none;z-index:40;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .logo-img{width:100%;height:100%;object-fit:contain;display:block;}
+  .row{display:flex;align-items:center;}
+  .col{display:flex;flex-direction:column;}
+  .between{justify-content:space-between;}
+
+  /* notes panel under phone */
+  .notes{
+    max-width:300px;background:#fff;border:1px solid var(--slate-200);border-radius:16px;padding:16px;
+    font-size:12px;color:var(--slate-600);line-height:1.5;
+  }
+  .notes h5{margin:0 0 8px;font-size:12.5px;color:var(--forest);}
+  .notes ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:5px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition-duration:.001ms !important;animation-duration:.001ms !important;}
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+
+<div class="wrap">
+  <div class="masthead">
+    <span class="eyebrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 2l1.8 5.6H20l-4.6 3.3 1.8 5.6L12 13.2 6.8 16.5l1.8-5.6L4 7.6h6.2z"/></svg>
+      Interactive prototype · dev/mock data
+    </span>
+    <h1>e Samagri — STEP 8 click-through preview</h1>
+    <p>Every screen inside the phone is a real click path through the approved application shell: mobile OTP sign-in, the RIK / PIF selector, both module homes, product detail, cart and order status. <strong>Everything shown on those screens is placeholder DEV/MOCK content</strong> — no real customers, entitlements, stock, prices or orders — so the app itself is presented exactly as a finished product would look. The production codebase (React + TypeScript + Vite, wired to the real NestJS/PostgreSQL backend) is delivered separately as project files.</p>
+    <p class="scope">
+      <span>Sign in with any 10 digits, then any 6-digit code</span>
+      <span>RIK = blue · PIF = green</span>
+      <span>Final approved logo &amp; UI reference</span>
+    </p>
+  </div>
+
+  <div class="stage">
+    <div class="phone-col">
+      <span class="col-label">e Samagri — customer app<em>All data on screen is DEV/MOCK placeholder content</em></span>
+      <div class="phone">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="notch"></div>
+          <!-- ============ SCREENS ============ -->
+
+          <!-- LOGIN -->
+          <section class="screen active" data-screen="login">
+            <div class="screen-scroll px" style="display:flex;flex-direction:column;justify-content:center;min-height:100%;padding-top:40px;padding-bottom:24px;">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+                <div style="width:76px;height:76px;">
+                  <img class="logo-img" src="data:image/jpeg;base64,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" alt="e Samagri logo">
+                </div>
+                <div style="text-align:center;">
+                  <h2 style="font-size:17px;margin:0 0 4px;color:var(--forest);">Welcome to e Samagri</h2>
+                  <p class="muted" style="font-size:12px;margin:0;">Sign in with your registered mobile number</p>
+                </div>
+              </div>
+              <div style="margin-top:26px;display:flex;flex-direction:column;gap:14px;">
+                <div>
+                  <label class="flabel">Mobile number</label>
+                  <div class="row" style="gap:8px;">
+                    <span style="font-size:13px;font-weight:700;color:var(--forest);">+91</span>
+                    <input id="mobileInput" class="field" placeholder="10-digit mobile number" inputmode="numeric" maxlength="10">
+                  </div>
+                </div>
+                <button class="btn blue" onclick="sendOtp()">Send OTP</button>
+                <p class="muted" style="text-align:center;font-size:10.5px;margin:0;">An initiative of Base Victualling Yard, Visakhapatnam</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- VERIFY OTP -->
+          <section class="screen" data-screen="verify">
+            <header class="app-header">
+              <button class="hbtn" onclick="nav('login')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2>Verify your number</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:16px;">
+              <p class="muted" style="font-size:12px;">Enter the 6-digit code sent to <strong id="verifyMobileLabel" style="color:var(--forest);">+91 9876543210</strong></p>
+              <div style="margin-top:14px;">
+                <label class="flabel">Verification code</label>
+                <input id="otpInput" class="field" placeholder="6-digit code" inputmode="numeric" maxlength="6" style="letter-spacing:.3em;font-weight:700;">
+              </div>
+              <button class="btn blue" style="margin-top:14px;" onclick="verifyOtp()">Verify &amp; continue</button>
+              <p class="muted" style="text-align:center;font-size:11px;margin-top:10px;">Resend code in 30s</p>
+            </div>
+          </section>
+
+          <!-- HOME -->
+          <section class="screen" data-screen="home">
+            <header class="app-header home-header">
+              <button class="hbtn" aria-label="Menu" onclick="nav('account')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+              </button>
+              <div style="flex:1;display:flex;justify-content:center;min-width:0;"><img class="brand-logo" src="data:image/jpeg;base64,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" alt="e Samagri"></div>
+              <button class="hbtn" aria-label="Notifications" onclick="nav('notifications')" style="position:relative;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+                <span style="position:absolute;top:8px;right:8px;width:9px;height:9px;border-radius:999px;background:var(--danger);border:1.5px solid #fff;"></span>
+              </button>
+            </header>
+            <div class="screen-scroll px" style="padding-top:16px;padding-bottom:18px;display:flex;flex-direction:column;gap:18px;">
+
+              <div class="hero">
+                <div class="hero-copy">
+                  <h3>Everyday<br>Essentials<br>for a Brighter<br>Tomorrow</h3>
+                  <span class="hero-rule"></span>
+                </div>
+                <div class="hero-art">
+                  <!-- Original illustration drawn for this screen: a paper grocery
+                       bag of fresh produce. Not derived from the logo artwork. -->
+                  <svg viewBox="0 0 120 132" role="img" aria-label="A paper bag of fresh groceries">
+                    <ellipse cx="60" cy="125" rx="42" ry="6" fill="#026A2E" opacity=".10"/>
+                    <path d="M34 62c-8-10-6-24 3-30 8 6 12 20 6 30z" fill="#3FAE6A"/>
+                    <path d="M46 61c-4-14 4-27 15-29 4 12 0 26-8 31z" fill="#2E9E5B"/>
+                    <path d="M62 60c2-13 13-22 23-20 0 12-8 22-18 24z" fill="#63C68C"/>
+                    <path d="M84 30h11v7c4 3 6 7 6 12v14H78V49c0-5 2-9 6-12z" fill="#fff" stroke="#CBD9DD" stroke-width="1.6"/>
+                    <rect x="84" y="25" width="11" height="6" rx="1.5" fill="#0072E5"/>
+                    <rect x="78" y="49" width="23" height="9" fill="#E8F5FD"/>
+                    <circle cx="39" cy="53" r="10" fill="#DE292E"/>
+                    <path d="M39 43c-2-2-5-3-7-1 1 2 4 4 7 4z" fill="#2E9E5B"/>
+                    <ellipse cx="58" cy="55" rx="10" ry="9" fill="#F2B33A"/>
+                    <path d="M58 46v-4" stroke="#2E9E5B" stroke-width="2.6" stroke-linecap="round"/>
+                    <path d="M22 62h76l-6 52a8 8 0 01-8 7H36a8 8 0 01-8-7z" fill="#DDB78F"/>
+                    <path d="M22 62h76l-1.6 11H23.6z" fill="#C99B6E"/>
+                    <path d="M56 73h8v48h-8z" fill="#C99B6E" opacity=".45"/>
+                  </svg>
+                </div>
+                <div class="hero-tags"><span>Fresh</span><span>Trusted</span><span>Convenient</span></div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:stretch;">
+                <button class="mp-card rik" onclick="nav('rikHome')">
+                  <span class="mp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L4 3H2"/></svg></span>
+                  <h4>RIK</h4><span class="mp-sub">Ration in Kind</span>
+                  <div class="mp-feats">
+                    <div class="mp-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6"/></svg>View entitlement</div>
+                    <div class="mp-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 8l9-5 9 5-9 5-9-5z"/><path d="M3 8v9l9 5 9-5V8"/></svg>Request ration</div>
+                    <div class="mp-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="7" width="14" height="10" rx="1.5"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>Pickup / Delivery</div>
+                  </div>
+                  <span class="mp-cta">Enter RIK <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg></span>
+                </button>
+                <button class="mp-card pif" onclick="nav('pifHome')">
+                  <span class="mp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M2 3h3l2.5 13h11L21 7H6"/></svg></span>
+                  <h4>PIF</h4><span class="mp-sub">Payment in Facility</span>
+                  <div class="mp-feats">
+                    <div class="mp-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 8h14l-1.5 12h-11z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>Shop groceries</div>
+                    <div class="mp-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Place order</div>
+                    <div class="mp-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="7" width="14" height="10" rx="1.5"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>Cash on Delivery</div>
+                  </div>
+                  <span class="mp-cta">Enter PIF <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg></span>
+                </button>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;">
+                <button class="qa-tile" style="background:var(--amber-light);border-color:#f7e2c9;" onclick="nav('pifHome')">
+                  <span class="ic round" style="background:var(--amber);"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M2 3h3l2.5 13h11L21 7H6"/></svg></span>
+                  <span>Shop Now</span>
+                </button>
+                <button class="qa-tile" style="background:var(--blue-light);border-color:#d6eafa;" onclick="nav('categoriesChooser')">
+                  <span class="ic round" style="background:var(--blue);"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="4" y="4" width="7" height="7" rx="1.2"/><rect x="13" y="4" width="7" height="7" rx="1.2"/><rect x="4" y="13" width="7" height="7" rx="1.2"/><rect x="13" y="13" width="7" height="7" rx="1.2"/></svg></span>
+                  <span>Our Products</span>
+                </button>
+                <button class="qa-tile" style="background:var(--green-light);border-color:#d3eedd;" onclick="nav('pifCheckout')">
+                  <span class="ic round" style="background:var(--green);"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="1" y="7" width="14" height="10" rx="1.5"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg></span>
+                  <span>Home Delivery</span>
+                </button>
+                <button class="qa-tile" style="background:var(--purple-light);border-color:#e3dbfb;" onclick="nav('account')">
+                  <span class="ic round" style="background:var(--purple);"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M2 20c1-3.5 3.8-5.5 7-5.5s6 2 7 5.5"/><path d="M15.5 14.8c2.4.3 4 2 4.7 5.2"/></svg></span>
+                  <span>Community Info</span>
+                </button>
+              </div>
+
+              <div class="ann-panel">
+                <div class="ann-head">
+                  <div class="ann-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11v2a1 1 0 001 1h2l4 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M15 9a4 4 0 010 6"/><path d="M18 6.5a8 8 0 010 11"/></svg>
+                    Announcements
+                  </div>
+                  <button class="ann-viewall" onclick="nav('notifications')">View All <span aria-hidden="true">›</span></button>
+                </div>
+                <div class="col" id="homeAnnouncements"></div>
+              </div>
+            </div>
+            <nav class="bottom-nav" id="bottomNavHome"></nav>
+          </section>
+
+          <!-- CATEGORIES CHOOSER -->
+          <section class="screen" data-screen="categoriesChooser">
+            <header class="app-header"><h2>Categories</h2></header>
+            <div class="screen-scroll px" style="padding-top:14px;display:flex;flex-direction:column;gap:10px;">
+              <button class="mod-card rik" style="padding:12px 14px;" onclick="nav('rikHome')">
+                <span class="mtag">RIK</span><h4 style="font-size:14px;">Browse RIK categories</h4>
+              </button>
+              <button class="mod-card pif" style="padding:12px 14px;" onclick="nav('pifHome')">
+                <span class="mtag">PIF</span><h4 style="font-size:14px;">Browse PIF categories</h4>
+              </button>
+            </div>
+            <nav class="bottom-nav" id="bottomNavCategories"></nav>
+          </section>
+
+          <!-- ORDERS CHOOSER -->
+          <section class="screen" data-screen="ordersChooser">
+            <header class="app-header"><h2>Orders</h2></header>
+            <div class="screen-scroll px" style="padding-top:14px;display:flex;flex-direction:column;gap:10px;">
+              <button class="mod-card rik" style="padding:12px 14px;" onclick="nav('rikOrders')">
+                <span class="mtag">RIK</span><h4 style="font-size:14px;">My RIK Orders</h4>
+              </button>
+              <button class="mod-card pif" style="padding:12px 14px;" onclick="nav('pifOrders')">
+                <span class="mtag">PIF</span><h4 style="font-size:14px;">My PIF Orders</h4>
+              </button>
+            </div>
+            <nav class="bottom-nav" id="bottomNavOrders"></nav>
+          </section>
+
+          <!-- RIK HOME -->
+          <section class="screen" data-screen="rikHome">
+            <header class="app-header tone-blue">
+              <h2>RIK · Ration in Kind</h2>
+              <button class="hbtn" onclick="nav('rikSearch')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+              <button class="hbtn" onclick="nav('rikCart')" style="position:relative;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L4 3H2"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
+                <span id="rikCartDot" class="badge" style="display:none;position:absolute;top:-2px;right:-2px;background:var(--danger);color:#fff;min-width:14px;height:14px;padding:0;align-items:center;justify-content:center;">0</span>
+              </button>
+            </header>
+            <div class="screen-scroll px" style="padding-top:12px;padding-bottom:14px;display:flex;flex-direction:column;gap:14px;">
+              <div class="ent-card">
+                <div class="row between">
+                  <h3 class="h" style="color:var(--blue-dark);">This month's entitlement</h3>
+                  <span class="badge rik">Sep 2026</span>
+                </div>
+                <dl class="ent-grid">
+                  <div class="stat"><dt>Allowed</dt><dd>62 kg</dd></div>
+                  <div class="stat"><dt>Issued</dt><dd>18 kg</dd></div>
+                  <div class="stat"><dt>Reserved</dt><dd>6 kg</dd></div>
+                  <div class="stat"><dt>Remaining</dt><dd>38 kg</dd></div>
+                </dl>
+              </div>
+              <div>
+                <h3 class="h" style="margin-bottom:8px;">Categories</h3>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;" id="rikCatGrid"></div>
+              </div>
+              <div>
+                <div class="row between" style="margin-bottom:8px;"><h3 class="h">Popular this week</h3></div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;" id="rikProductGrid"></div>
+              </div>
+            </div>
+            <nav class="bottom-nav" id="bottomNavRik"></nav>
+          </section>
+
+          <!-- RIK CATEGORY -->
+          <section class="screen" data-screen="rikCategory">
+            <header class="app-header tone-blue">
+              <button class="hbtn" onclick="nav('rikHome')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2 id="rikCategoryTitle">Category</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:12px;">
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;" id="rikCategoryGrid"></div>
+            </div>
+            <nav class="bottom-nav" id="bottomNavRikCat"></nav>
+          </section>
+
+          <!-- RIK PRODUCT DETAIL -->
+          <section class="screen" data-screen="rikProduct">
+            <header class="app-header tone-blue">
+              <button class="hbtn" onclick="navBack('rikHome')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2>Product details</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:14px;padding-bottom:18px;" id="rikProductBody"></div>
+          </section>
+
+          <!-- RIK SEARCH -->
+          <section class="screen" data-screen="rikSearch">
+            <header class="app-header tone-blue">
+              <button class="hbtn" onclick="nav('rikHome')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2>Search RIK</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:12px;">
+              <input class="field" placeholder="Search “rice”, “dal”, “oil”…" oninput="filterSearch('rik',this.value)">
+              <div style="margin-top:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;" id="rikSearchGrid"></div>
+              <div id="rikSearchEmpty" style="display:none;"></div>
+            </div>
+          </section>
+
+          <!-- RIK CART -->
+          <section class="screen" data-screen="rikCart">
+            <header class="app-header tone-blue">
+              <button class="hbtn" onclick="nav('rikHome')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2>Your RIK request</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:10px;" id="rikCartBody"></div>
+          </section>
+
+          <!-- RIK CHECKOUT -->
+          <section class="screen" data-screen="rikCheckout">
+            <header class="app-header tone-blue">
+              <button class="hbtn" onclick="nav('rikCart')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2>Fulfilment</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:14px;padding-bottom:18px;display:flex;flex-direction:column;gap:14px;">
+              <div>
+                <label class="flabel">How will you collect this?</label>
+                <div class="seg">
+                  <button class="on" id="rikFulPickup" onclick="setRikFulfilment('pickup')">Pickup</button>
+                  <button id="rikFulDelivery" onclick="setRikFulfilment('delivery')">Delivery</button>
+                </div>
+              </div>
+
+              <div class="card" id="rikPickupPanel">
+                <h3 class="h">Pickup location</h3>
+                <p class="muted" style="font-size:12px;margin:7px 0 0;">The approved pickup point and collection timings will appear here once confirmed by the facility.</p>
+              </div>
+
+              <div id="rikDeliveryPanel" style="display:none;">
+                <label class="flabel" for="rikAddr">Delivery address <span style="color:var(--danger);">*</span></label>
+                <textarea id="rikAddr" class="field" rows="3" placeholder="Block / quarter number, street, landmark" style="resize:none;" oninput="clearAddrError('rik')"></textarea>
+                <p id="rikAddrErr" style="display:none;font-size:12px;color:var(--danger);font-weight:600;margin:6px 0 0;">A delivery address is required before a delivery request can be submitted.</p>
+                <p class="muted" style="font-size:11.5px;margin:8px 0 0;">Delivery eligibility and any restrictions are set by the facility.</p>
+              </div>
+
+              <div class="card" style="background:var(--blue-light);border-color:transparent;">
+                <p style="font-size:12px;color:var(--blue-dark);margin:0;font-weight:600;">No payment required — RIK items are issued against your approved entitlement.</p>
+              </div>
+              <button class="btn blue" onclick="confirmRikOrder()">Confirm request</button>
+            </div>
+          </section>
+
+          <!-- RIK ORDERS -->
+          <section class="screen" data-screen="rikOrders">
+            <header class="app-header tone-blue"><h2>My RIK Orders</h2></header>
+            <div class="screen-scroll px" style="padding-top:12px;" id="rikOrdersBody"></div>
+            <nav class="bottom-nav" id="bottomNavRikOrders"></nav>
+          </section>
+
+          <!-- RIK ORDER DETAIL -->
+          <section class="screen" data-screen="rikOrderDetail">
+            <header class="app-header tone-blue">
+              <button class="hbtn" onclick="nav('rikOrders')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2 id="rikOrderDetailTitle">Request</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:16px;" id="rikOrderDetailBody"></div>
+          </section>
+
+          <!-- PIF HOME -->
+          <section class="screen" data-screen="pifHome">
+            <header class="app-header tone-green">
+              <h2>PIF · Grocery store</h2>
+              <button class="hbtn" onclick="nav('pifSearch')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+              <button class="hbtn" onclick="nav('pifCart')" style="position:relative;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L4 3H2"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
+                <span id="pifCartDot" class="badge" style="display:none;position:absolute;top:-2px;right:-2px;background:var(--danger);color:#fff;min-width:14px;height:14px;padding:0;align-items:center;justify-content:center;">0</span>
+              </button>
+            </header>
+            <div class="screen-scroll px" style="padding-top:12px;padding-bottom:14px;display:flex;flex-direction:column;gap:14px;">
+              <div>
+                <h3 class="h" style="margin-bottom:8px;">Categories</h3>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;" id="pifCatGrid"></div>
+              </div>
+              <div>
+                <div class="row between" style="margin-bottom:8px;"><h3 class="h">Popular this week</h3></div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;" id="pifProductGrid"></div>
+              </div>
+            </div>
+            <nav class="bottom-nav" id="bottomNavPif"></nav>
+          </section>
+
+          <!-- PIF CATEGORY -->
+          <section class="screen" data-screen="pifCategory">
+            <header class="app-header tone-green">
+              <button class="hbtn" onclick="nav('pifHome')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2 id="pifCategoryTitle">Category</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:12px;padding-bottom:18px;">
+              <div id="pifCategoryChips"></div>
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;" id="pifCategoryGrid"></div>
+            </div>
+            <nav class="bottom-nav" id="bottomNavPifCat"></nav>
+          </section>
+
+          <!-- PIF PRODUCT DETAIL -->
+          <section class="screen" data-screen="pifProduct">
+            <header class="app-header tone-green">
+              <button class="hbtn" onclick="navBack('pifHome')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2>Product details</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:14px;padding-bottom:18px;" id="pifProductBody"></div>
+          </section>
+
+          <!-- PIF SEARCH -->
+          <section class="screen" data-screen="pifSearch">
+            <header class="app-header tone-green">
+              <button class="hbtn" onclick="nav('pifHome')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2>Search groceries</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:12px;">
+              <input class="field" placeholder="Search “milk”, “bread”, “chips”…" oninput="filterSearch('pif',this.value)">
+              <div style="margin-top:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;" id="pifSearchGrid"></div>
+              <div id="pifSearchEmpty" style="display:none;"></div>
+            </div>
+          </section>
+
+          <!-- PIF CART -->
+          <section class="screen" data-screen="pifCart">
+            <header class="app-header tone-green">
+              <button class="hbtn" onclick="nav('pifHome')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2>Your cart</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:10px;" id="pifCartBody"></div>
+          </section>
+
+          <!-- PIF CHECKOUT -->
+          <section class="screen" data-screen="pifCheckout">
+            <header class="app-header tone-green">
+              <button class="hbtn" onclick="nav('pifCart')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2>Checkout</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:14px;display:flex;flex-direction:column;gap:14px;">
+              <div>
+                <label class="flabel">Delivery or pickup?</label>
+                <div class="seg">
+                  <button class="on" id="pifFulDelivery" onclick="setPifFulfilment('delivery')">Home delivery</button>
+                  <button id="pifFulPickup" onclick="setPifFulfilment('pickup')">Self pickup</button>
+                </div>
+              </div>
+              <div id="pifDeliveryPanel">
+                <label class="flabel" for="pifAddr">Delivery address <span style="color:var(--danger);">*</span></label>
+                <textarea id="pifAddr" class="field" rows="3" placeholder="Block / quarter number, street, landmark" style="resize:none;" oninput="clearAddrError('pif')"></textarea>
+                <p id="pifAddrErr" style="display:none;font-size:12px;color:var(--danger);font-weight:600;margin:6px 0 0;">A delivery address is required before a delivery order can be placed.</p>
+              </div>
+
+              <div class="card" id="pifPickupPanel" style="display:none;">
+                <h3 class="h">Pickup location</h3>
+                <p class="muted" style="font-size:12px;margin:7px 0 0;">The approved pickup point and collection timings will appear here once confirmed by the facility.</p>
+              </div>
+
+              <div class="card">
+                <h3 class="h">Payment method</h3>
+                <p class="muted" style="font-size:12px;margin:7px 0 0;">Cash on Delivery — the only method available currently.</p>
+              </div>
+              <div class="card" id="pifCheckoutSummary"></div>
+              <button class="btn green" onclick="confirmPifOrder()">Place order · Cash on Delivery</button>
+            </div>
+          </section>
+
+          <!-- ORDER CONFIRMATION (spec PIF-2 / RIK-6) -->
+          <section class="screen" data-screen="orderConfirmed">
+            <header class="app-header"><h2 id="confTitle">Order confirmed</h2></header>
+            <div class="screen-scroll px" style="padding-top:24px;padding-bottom:20px;" id="confBody"></div>
+          </section>
+
+          <!-- PIF ORDERS -->
+          <section class="screen" data-screen="pifOrders">
+            <header class="app-header tone-green"><h2>My PIF Orders</h2></header>
+            <div class="screen-scroll px" style="padding-top:12px;" id="pifOrdersBody"></div>
+            <nav class="bottom-nav" id="bottomNavPifOrders"></nav>
+          </section>
+
+          <!-- PIF ORDER DETAIL -->
+          <section class="screen" data-screen="pifOrderDetail">
+            <header class="app-header tone-green">
+              <button class="hbtn" onclick="nav('pifOrders')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2 id="pifOrderDetailTitle">Order</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:16px;" id="pifOrderDetailBody"></div>
+          </section>
+
+          <!-- ACCOUNT -->
+          <section class="screen" data-screen="account">
+            <header class="app-header"><h2>Account</h2></header>
+            <div class="screen-scroll px" style="padding-top:14px;display:flex;flex-direction:column;gap:14px;">
+              <div class="card" style="display:flex;align-items:center;gap:12px;">
+                <div style="width:46px;height:46px;border-radius:999px;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;">PU</div>
+                <div>
+                  <div style="font-weight:800;font-size:13.5px;color:var(--forest);">Preview User</div>
+                  <div class="muted" style="font-size:11px;">+91 98XXXXXX10 · Block 4, Qtr 12</div>
+                </div>
+              </div>
+              <div class="col" style="gap:1px;border:1px solid var(--slate-100);border-radius:14px;overflow:hidden;">
+                <button class="row between" style="padding:13px 14px;background:#fff;border:none;border-bottom:1px solid var(--slate-100);font-family:inherit;cursor:pointer;" onclick="nav('rikHome')"><span style="font-size:12.5px;font-weight:700;color:var(--forest);">RIK entitlement info</span><span class="muted">›</span></button>
+                <button class="row between" style="padding:13px 14px;background:#fff;border:none;border-bottom:1px solid var(--slate-100);font-family:inherit;cursor:pointer;" onclick="nav('ordersChooser')"><span style="font-size:12.5px;font-weight:700;color:var(--forest);">Order history</span><span class="muted">›</span></button>
+                <button class="row between" style="padding:13px 14px;background:#fff;border:none;border-bottom:1px solid var(--slate-100);font-family:inherit;cursor:pointer;" onclick="nav('notifications')"><span style="font-size:12.5px;font-weight:700;color:var(--forest);">Notifications</span><span class="muted">›</span></button>
+                <button class="row between" style="padding:13px 14px;background:#fff;border:none;font-family:inherit;cursor:pointer;" onclick="doLogout()"><span style="font-size:12.5px;font-weight:700;color:var(--danger);">Log out</span><span class="muted">›</span></button>
+              </div>
+            </div>
+            <nav class="bottom-nav" id="bottomNavAccount"></nav>
+          </section>
+
+          <!-- NOTIFICATIONS -->
+          <section class="screen" data-screen="notifications">
+            <header class="app-header">
+              <button class="hbtn" onclick="navBack('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <h2>Notifications</h2>
+            </header>
+            <div class="screen-scroll px" style="padding-top:12px;display:flex;flex-direction:column;gap:8px;" id="notificationsBody"></div>
+          </section>
+
+        </div>
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <h5>What this prototype shows</h5>
+      <ul>
+        <li><strong>Real design system</strong> — same colors, type, spacing and components as the production React app.</li>
+        <li><strong>Strict RIK / PIF separation</strong> — try adding items in RIK, then switch to PIF: your PIF cart starts empty, and vice versa.</li>
+        <li><strong>No entitlement bar</strong> — allowed/issued/reserved/remaining are shown as plain figures, per the approved direction.</li>
+        <li><strong>RIK has no price or payment UI</strong> anywhere; PIF is COD-only, no fake payment processing.</li>
+        <li>All catalog, order and profile data here is <strong>placeholder</strong> — the real app talks to the live NestJS/PostgreSQL backend and shows honest empty states until each module is built.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- mock catalog (clearly DEV/MOCK — mirrors dev-fixtures/*.ts) ---------------- */
+  var RIK_CATS = [
+    {id:'grains', name:'Rice & Grains', emoji:'🌾', bg:'var(--blue-light)', fg:'var(--blue-dark)'},
+    {id:'pulses', name:'Pulses & Dal', emoji:'🫘', bg:'var(--amber-light)', fg:'var(--amber-dark)'},
+    {id:'oil', name:'Cooking Oil', emoji:'🫗', bg:'var(--green-light)', fg:'var(--green-dark)'},
+    {id:'staples', name:'Sugar & Salt', emoji:'🧂', bg:'var(--purple-light)', fg:'var(--purple)'}
+  ];
+  var RIK_PRODUCTS = [
+    {id:'r1', cat:'grains', name:'Rice (Sona Masoori)', unit:'10 kg bag', emoji:'🍚', allowed:20,issued:10,reserved:0,remaining:10},
+    {id:'r2', cat:'pulses', name:'Toor Dal', unit:'2 kg pack', emoji:'🟡', allowed:4,issued:2,reserved:0,remaining:2},
+    {id:'r3', cat:'oil', name:'Sunflower Oil', unit:'1 L pouch', emoji:'🫗', allowed:3,issued:1,reserved:0,remaining:2},
+    {id:'r4', cat:'grains', name:'Wheat Atta', unit:'10 kg bag', emoji:'🌾', allowed:15,issued:5,reserved:2,remaining:8},
+    {id:'r5', cat:'staples', name:'Sugar', unit:'2 kg pack', emoji:'🧂', allowed:2,issued:0,reserved:0,remaining:2},
+    {id:'r6', cat:'staples', name:'Iodised Salt', unit:'1 kg pack', emoji:'🧂', allowed:1,issued:0,reserved:0,remaining:1},
+    {id:'r7', cat:'pulses', name:'Moong Dal', unit:'1 kg pack', emoji:'🟢', allowed:2,issued:0,reserved:0,remaining:2},
+    {id:'r8', cat:'oil', name:'Refined Oil', unit:'5 L can', emoji:'🫗', allowed:1,issued:0,reserved:0,remaining:1}
+  ];
+  /* PIF taxonomy — the 18 category examples supplied by the client (spec PIF-3).
+     These are DESIGN EXAMPLES ONLY, never production data: the admin application
+     owns categories and subcategories (backlog ADM-2 / PIF-3a). */
+  var PIF_CATS = [
+    {id:'dairy',     name:'Dairy',        emoji:'\ud83e\udd5b', bg:'var(--blue-light)',   fg:'var(--blue-dark)',  subs:['Milk','Curd & Yoghurt','Butter & Cheese','Paneer']},
+    {id:'vegetables',name:'Vegetables',   emoji:'\ud83e\udd66', bg:'var(--green-light)',  fg:'var(--green-dark)', subs:['Fresh Vegetables','Leafy Greens','Exotic']},
+    {id:'fruits',    name:'Fruits',       emoji:'\ud83c\udf4e', bg:'var(--danger-light)', fg:'var(--danger)',     subs:['Seasonal','Imported','Cut Fruit']},
+    {id:'drinks',    name:'Drinks & Beverages', emoji:'\ud83e\uddc3', bg:'var(--amber-light)', fg:'var(--amber-dark)', subs:['Juices','Soft Drinks','Tea & Coffee','Water']},
+    {id:'meat',      name:'Fresh Meat',   emoji:'\ud83c\udf57', bg:'var(--danger-light)', fg:'var(--danger)',     subs:['Chicken','Mutton','Fish & Seafood','Eggs']},
+    {id:'frozen',    name:'Frozen',       emoji:'\u2744\ufe0f',  bg:'var(--blue-light)',   fg:'var(--blue-dark)',  subs:['Frozen Vegetables','Ready to Cook','Frozen Snacks']},
+    {id:'snacks',    name:'Snacks',       emoji:'\ud83c\udf5f', bg:'var(--amber-light)',  fg:'var(--amber-dark)', subs:['Chips & Namkeen','Biscuits','Chocolates']},
+    {id:'staples',   name:'Staples',      emoji:'\ud83e\uded8', bg:'var(--green-light)',  fg:'var(--green-dark)', subs:['Sugar & Salt','Dry Fruits']},
+    {id:'rice',      name:'Rice',         emoji:'\ud83c\udf5a', bg:'var(--purple-light)', fg:'var(--purple)',     subs:['Raw Rice','Basmati','Boiled Rice']},
+    {id:'pulses',    name:'Pulses',       emoji:'\ud83e\uded8', bg:'var(--amber-light)',  fg:'var(--amber-dark)', subs:['Toor','Moong','Chana','Urad']},
+    {id:'flour',     name:'Flour',        emoji:'\ud83c\udf3e', bg:'var(--green-light)',  fg:'var(--green-dark)', subs:['Atta','Maida','Besan','Rava']},
+    {id:'spices',    name:'Spices',       emoji:'\ud83c\udf36\ufe0f', bg:'var(--danger-light)', fg:'var(--danger)', subs:['Whole Spices','Ground Spices','Masala Blends']},
+    {id:'oils',      name:'Cooking Oils', emoji:'\ud83e\uded2', bg:'var(--amber-light)',  fg:'var(--amber-dark)', subs:['Sunflower','Groundnut','Mustard','Ghee']},
+    {id:'personal',  name:'Personal Care',emoji:'\ud83e\uddf4', bg:'var(--purple-light)', fg:'var(--purple)',     subs:['Bath & Body','Oral Care','Hair Care']},
+    {id:'household', name:'Household',    emoji:'\ud83e\uddfa', bg:'var(--blue-light)',   fg:'var(--blue-dark)',  subs:['Cleaning','Laundry','Kitchen Supplies']},
+    {id:'bakery',    name:'Bakery',       emoji:'\ud83c\udf5e', bg:'var(--amber-light)',  fg:'var(--amber-dark)', subs:['Bread','Buns & Rusk','Cakes']},
+    {id:'packaged',  name:'Packaged Foods', emoji:'\ud83e\udd6b', bg:'var(--green-light)', fg:'var(--green-dark)', subs:['Noodles & Pasta','Sauces','Breakfast Cereal']},
+    {id:'icecream',  name:'Ice Cream',    emoji:'\ud83c\udf68', bg:'var(--purple-light)', fg:'var(--purple)',     subs:['Tubs','Cones & Bars']}
+  ];
+  var PIF_PRODUCTS = [
+    {id:'p1', cat:'fruits',     sub:'Seasonal',        name:'Bananas',            unit:'1 dozen',     emoji:'\ud83c\udf4c', price:54,  mrp:60},
+    {id:'p2', cat:'dairy',      sub:'Milk',            name:'Toned Milk',         unit:'1 L pouch',   emoji:'\ud83e\udd5b', price:29,  mrp:30},
+    {id:'p3', cat:'bakery',     sub:'Bread',           name:'White Bread',        unit:'400 g loaf',  emoji:'\ud83c\udf5e', price:38,  mrp:42},
+    {id:'p4', cat:'snacks',     sub:'Chips & Namkeen', name:'Potato Chips',       unit:'90 g pack',   emoji:'\ud83c\udf5f', price:20,  mrp:20},
+    {id:'p5', cat:'personal',   sub:'Oral Care',       name:'Toothpaste',         unit:'150 g tube',  emoji:'\ud83e\udea5', price:89,  mrp:99},
+    {id:'p6', cat:'household',  sub:'Laundry',         name:'Laundry Detergent',  unit:'1 kg pack',   emoji:'\ud83e\uddf4', price:110, mrp:125},
+    {id:'p7', cat:'dairy',      sub:'Paneer',          name:'Paneer',             unit:'200 g pack',  emoji:'\ud83e\uddc0', price:85,  mrp:90},
+    {id:'p8', cat:'frozen',     sub:'Frozen Vegetables', name:'Frozen Green Peas',unit:'500 g pack',  emoji:'\ud83d\udfe2', price:65,  mrp:70},
+    {id:'p9', cat:'vegetables', sub:'Fresh Vegetables',name:'Tomatoes',           unit:'1 kg',        emoji:'\ud83c\udf45', price:32,  mrp:38, stock:'low'},
+    {id:'p10',cat:'vegetables', sub:'Leafy Greens',    name:'Spinach',            unit:'250 g bunch', emoji:'\ud83e\udd6c', price:18,  mrp:20},
+    {id:'p11',cat:'vegetables', sub:'Fresh Vegetables',name:'Onions',             unit:'1 kg',        emoji:'\ud83e\uddc5', price:40,  mrp:45},
+    {id:'p12',cat:'fruits',     sub:'Seasonal',        name:'Apples',             unit:'1 kg',        emoji:'\ud83c\udf4e', price:160, mrp:180},
+    {id:'p13',cat:'dairy',      sub:'Curd & Yoghurt',  name:'Curd',               unit:'400 g cup',   emoji:'\ud83e\udd5b', price:45,  mrp:48},
+    {id:'p14',cat:'drinks',     sub:'Tea & Coffee',    name:'Tea Leaves',         unit:'250 g pack',  emoji:'\u2615',       price:135, mrp:150},
+    {id:'p15',cat:'drinks',     sub:'Juices',          name:'Orange Juice',       unit:'1 L carton',  emoji:'\ud83e\uddc3', price:99,  mrp:110},
+    {id:'p16',cat:'rice',       sub:'Basmati',         name:'Basmati Rice',       unit:'5 kg bag',    emoji:'\ud83c\udf5a', price:520, mrp:580},
+    {id:'p17',cat:'pulses',     sub:'Toor',            name:'Toor Dal',           unit:'1 kg pack',   emoji:'\ud83d\udfe1', price:145, mrp:160},
+    {id:'p18',cat:'flour',      sub:'Atta',            name:'Whole Wheat Atta',   unit:'5 kg bag',    emoji:'\ud83c\udf3e', price:245, mrp:270},
+    {id:'p19',cat:'oils',       sub:'Sunflower',       name:'Sunflower Oil',      unit:'1 L bottle',  emoji:'\ud83e\uded2', price:145, mrp:160},
+    {id:'p20',cat:'spices',     sub:'Ground Spices',   name:'Turmeric Powder',    unit:'200 g pack',  emoji:'\ud83c\udf36\ufe0f', price:58, mrp:65},
+    {id:'p21',cat:'meat',       sub:'Eggs',            name:'Farm Eggs',          unit:'tray of 30',  emoji:'\ud83e\udd5a', price:210, mrp:230},
+    {id:'p22',cat:'meat',       sub:'Chicken',         name:'Chicken (curry cut)',unit:'1 kg',        emoji:'\ud83c\udf57', price:240, mrp:260, stock:'out'},
+    {id:'p23',cat:'packaged',   sub:'Noodles & Pasta', name:'Instant Noodles',    unit:'4-pack',      emoji:'\ud83c\udf5c', price:56,  mrp:60},
+    {id:'p24',cat:'icecream',   sub:'Tubs',            name:'Vanilla Ice Cream',  unit:'700 ml tub',  emoji:'\ud83c\udf68', price:180, mrp:199, stock:'low'},
+    {id:'p25',cat:'staples',    sub:'Sugar & Salt',    name:'Sugar',              unit:'1 kg pack',   emoji:'\ud83e\uddc2', price:48,  mrp:52},
+    {id:'p26',cat:'snacks',     sub:'Biscuits',        name:'Marie Biscuits',     unit:'250 g pack',  emoji:'\ud83c\udf6a', price:35,  mrp:40}
+  ];
+  var ANNOUNCEMENTS = [
+    {title:'RIK Issue Schedule — September 2026', body:'Rice & Dal issue available on 10, 11 & 12 September.', priority:'URGENT', audience:'RIK', date:'08 Sep 2026', kind:'megaphone'},
+    {title:'Holiday Notice', body:'Facility will remain closed on 15 September.', priority:'NORMAL', audience:'ALL', date:'07 Sep 2026', kind:'calendar'},
+    {title:'PIF Store Timings', body:'PIF store will be open from 0900 – 1800 hrs.', priority:'NORMAL', audience:'PIF', date:'05 Sep 2026', kind:'info'}
+  ];
+
+  /* ---------------- state ---------------- */
+  var rikCart = {};   // id -> qty
+  var pifCart = {};   // id -> qty  (strictly separate object — never shared with rikCart)
+  var lastFulfilment = {rik:'pickup', pif:'delivery'};
+  var history = ['login'];
+
+  function byId(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>]/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+  function money(n){ return '₹' + n.toLocaleString('en-IN'); }
+
+  /* ---------------- nav ---------------- */
+  function nav(screen, push){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    var target = document.querySelector('.screen[data-screen="'+screen+'"]');
+    if(target) target.classList.add('active');
+    if(push !== false) history.push(screen);
+    render();
+  }
+  function navBack(fallback){
+    history.pop();
+    var prev = history[history.length-1] || fallback;
+    nav(prev, false);
+  }
+  window.nav = nav; window.navBack = navBack;
+
+  /* ---------------- auth mock ---------------- */
+  window.sendOtp = function(){
+    var m = byId('mobileInput').value.trim();
+    var display = m.length === 10 ? m : '9876543210';
+    byId('verifyMobileLabel').textContent = '+91 ' + display;
+    nav('verify');
+  };
+  window.verifyOtp = function(){
+    var v = byId('otpInput').value.trim();
+    if(v.length !== 6){ showToast('Enter a 6-digit code'); return; }
+    history = ['home'];
+    nav('home', false);
+  };
+  window.doLogout = function(){
+    byId('mobileInput').value = '';
+    byId('otpInput').value = '';
+    rikCart = {}; pifCart = {};
+    history = ['login'];
+    nav('login', false);
+  };
+
+  /* ---------------- toast ---------------- */
+  var toastTimer;
+  function showToast(msg){
+    var t = byId('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 1600);
+  }
+
+  /* ---------------- bottom nav ---------------- */
+  var NAV_ITEMS = [
+    {key:'home', label:'Home', screen:'home', icon:'<path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/>'},
+    {key:'categories', label:'Categories', screen:'categoriesChooser', icon:'<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>'},
+    {key:'orders', label:'Orders', screen:'ordersChooser', icon:'<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/>'},
+    {key:'account', label:'Account', screen:'account', icon:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.6-4 5-6 8-6s6.4 2 8 6"/>'}
+  ];
+  var NAV_HOSTS = ['bottomNavHome','bottomNavCategories','bottomNavOrders','bottomNavRik','bottomNavRikOrders','bottomNavPif','bottomNavPifOrders','bottomNavAccount','bottomNavRikCat','bottomNavPifCat'];
+  var NAV_HOST_ACTIVE = {
+    bottomNavHome:'home', bottomNavCategories:'categories', bottomNavOrders:'orders',
+    bottomNavRik:'categories', bottomNavRikCat:'categories', bottomNavRikOrders:'orders',
+    bottomNavPif:'categories', bottomNavPifCat:'categories', bottomNavPifOrders:'orders',
+    bottomNavAccount:'account'
+  };
+  function renderBottomNavs(){
+    NAV_HOSTS.forEach(function(hostId){
+      var host = byId(hostId);
+      if(!host) return;
+      var activeKey = NAV_HOST_ACTIVE[hostId];
+      host.innerHTML = NAV_ITEMS.map(function(item){
+        var on = item.key === activeKey;
+        return '<button class="nav-item'+(on?' on':'')+'" onclick="nav(\''+item.screen+'\')">' +
+          '<span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+(on?2.6:2.1)+'">'+item.icon+'</svg></span>' +
+          '<span>'+item.label+'</span></button>';
+      }).join('');
+    });
+  }
+
+  /* ---------------- product card renderer ---------------- */
+  function productCard(p, module){
+    var cart = module === 'rik' ? rikCart : pifCart;
+    var qty = cart[p.id] || 0;
+    var clickNav = module === 'rik' ? 'openRikProduct(\''+p.id+'\')' : 'openPifProduct(\''+p.id+'\')';
+    var footer;
+    if(qty > 0){
+      footer = '<div class="qty-stepper'+(module==='pif'?' pif':'')+'" onclick="event.stopPropagation()">' +
+        '<button onclick="changeQty(\''+module+'\',\''+p.id+'\',-1)">−</button><span>'+qty+'</span><button onclick="changeQty(\''+module+'\',\''+p.id+'\',1)">+</button></div>';
+    } else {
+      footer = '<button class="add-btn'+(module==='pif'?' pif':'')+'" onclick="event.stopPropagation();changeQty(\''+module+'\',\''+p.id+'\',1)">Add</button>';
+    }
+    var priceLine = module === 'rik'
+      ? '<div class="ent">'+p.remaining+' '+ (p.unit.indexOf('kg')>-1?'kg':p.unit.indexOf('L')>-1?'L':'pk') +' left</div>'
+      : '<div class="price-row"><span class="price">'+money(p.price)+'</span>'+(p.mrp>p.price?'<span class="mrp">'+money(p.mrp)+'</span>':'')+'</div>';
+    /* Availability is part of every purchasable product (spec PIF-4). */
+    var stock = p.stock || 'in';
+    var avail = stock==='out'
+      ? '<div class="avail out">Out of stock</div>'
+      : (stock==='low' ? '<div class="avail low">Only a few left</div>' : '<div class="avail in">In stock</div>');
+    if(stock==='out'){
+      footer = '<button class="add-btn'+(module==='pif'?' pif':'')+'" disabled style="opacity:.45;cursor:not-allowed;">Unavailable</button>';
+    }
+    return '<div class="p-card" onclick="'+clickNav+'">' +
+      '<div class="thumb" style="background:'+(module==='rik'?'var(--blue-light)':'var(--green-light)')+';">'+p.emoji+'</div>' +
+      '<div class="body"><div class="name">'+esc(p.name)+'</div><div class="unit">'+esc(p.unit)+'</div>' + priceLine + avail +
+      '<div class="foot">'+footer+'</div></div></div>';
+  }
+
+  window.changeQty = function(module, id, delta){
+    var cart = module === 'rik' ? rikCart : pifCart;
+    var next = (cart[id] || 0) + delta;
+    if(next <= 0){ delete cart[id]; } else { cart[id] = next; }
+    if(delta > 0) showToast('Added to '+module.toUpperCase()+' cart');
+    render();
+  };
+
+  /* ---------------- RIK render ---------------- */
+  function renderRikHome(){
+    byId('rikCatGrid').innerHTML = RIK_CATS.map(function(c){
+      return '<button class="cat-tile" style="background:'+c.bg+';color:'+c.fg+';" onclick="openRikCategory(\''+c.id+'\')">' +
+        '<span class="ic" style="background:rgba(255,255,255,.55);">'+c.emoji+'</span><span>'+esc(c.name)+'</span></button>';
+    }).join('');
+    byId('rikProductGrid').innerHTML = RIK_PRODUCTS.slice(0,4).map(function(p){ return productCard(p,'rik'); }).join('');
+    var count = Object.keys(rikCart).reduce(function(s,k){return s+rikCart[k];},0);
+    var dot = byId('rikCartDot');
+    dot.style.display = count>0 ? 'flex':'none'; dot.textContent = count;
+  }
+  window.openRikCategory = function(catId){
+    var cat = RIK_CATS.filter(function(c){return c.id===catId;})[0];
+    byId('rikCategoryTitle').textContent = cat ? cat.name : 'Category';
+    var items = RIK_PRODUCTS.filter(function(p){return p.cat===catId;});
+    byId('rikCategoryGrid').innerHTML = items.map(function(p){ return productCard(p,'rik'); }).join('') ||
+      '<div style="grid-column:1/-1;"><div class="empty"><div class="ic">📦</div><h4>No items yet</h4><p>This category will be stocked soon.</p></div></div>';
+    nav('rikCategory');
+  };
+  window.openRikProduct = function(id){
+    var p = RIK_PRODUCTS.filter(function(x){return x.id===id;})[0];
+    if(!p) return;
+    var qty = rikCart[id] || 0;
+    byId('rikProductBody').innerHTML =
+      '<div style="aspect-ratio:1/1;max-width:150px;margin:0 auto 14px;border-radius:20px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:52px;">'+p.emoji+'</div>' +
+      '<span class="badge rik">RIK</span>' +
+      '<h2 style="font-size:16px;margin:8px 0 2px;color:var(--forest);">'+esc(p.name)+'</h2>' +
+      '<p class="muted" style="font-size:12px;margin:0 0 14px;">'+esc(p.unit)+'</p>' +
+      '<div class="ent-card"><h3 class="h" style="color:var(--blue-dark);">Your entitlement for this item</h3>' +
+      '<dl class="ent-grid"><div class="stat"><dt>Allowed</dt><dd>'+p.allowed+'</dd></div><div class="stat"><dt>Issued</dt><dd>'+p.issued+'</dd></div>' +
+      '<div class="stat"><dt>Reserved</dt><dd>'+p.reserved+'</dd></div><div class="stat"><dt>Remaining</dt><dd>'+p.remaining+'</dd></div></dl></div>' +
+      '<div style="margin-top:12px;"><h3 class="h" style="margin-bottom:6px;">Alternatives</h3><p class="muted" style="font-size:11.5px;">If unavailable, you may substitute with an approved alternative from the same entitlement category (final substitution list to be confirmed by RIK admin).</p></div>' +
+      '<div style="margin-top:16px;">' + (qty>0
+        ? '<div class="qty-stepper" style="padding:6px;"><button onclick="changeQty(\'rik\',\''+id+'\',-1)">−</button><span style="font-size:14px;">'+qty+' in request</span><button onclick="changeQty(\'rik\',\''+id+'\',1)">+</button></div>'
+        : '<button class="btn blue" onclick="changeQty(\'rik\',\''+id+'\',1)">Add to request</button>') + '</div>';
+    nav('rikProduct');
+  };
+  window.filterSearch = function(module, q){
+    q = q.trim().toLowerCase();
+    var list = module==='rik' ? RIK_PRODUCTS : PIF_PRODUCTS;
+    var grid = byId(module+'SearchGrid');
+    var emptyBox = byId(module+'SearchEmpty');
+    if(!q){ grid.innerHTML=''; emptyBox.style.display='none'; return; }
+    var matches = list.filter(function(p){ return p.name.toLowerCase().indexOf(q) > -1; });
+    if(matches.length===0){
+      grid.innerHTML='';
+      emptyBox.style.display='block';
+      emptyBox.innerHTML='<div class="empty"><div class="ic">🔍</div><h4>No results</h4><p>No products found for "'+esc(q)+'".</p></div>';
+    } else {
+      emptyBox.style.display='none';
+      grid.innerHTML = matches.map(function(p){ return productCard(p, module); }).join('');
+    }
+  };
+  function renderRikCart(){
+    var ids = Object.keys(rikCart);
+    var body = byId('rikCartBody');
+    if(ids.length===0){
+      body.innerHTML = '<div class="empty"><div class="ic">🧺</div><h4>Your RIK request is empty</h4><p>Browse categories to add items against your entitlement.</p><button class="btn outline-blue sm" style="margin-top:10px;width:auto;padding:8px 16px;" onclick="nav(\'rikHome\')">Browse RIK</button></div>';
+      return;
+    }
+    var rows = ids.map(function(id){
+      var p = RIK_PRODUCTS.filter(function(x){return x.id===id;})[0];
+      var qty = rikCart[id];
+      return '<div class="cart-row"><div class="thumb" style="background:var(--blue-light);">'+p.emoji+'</div>' +
+        '<div class="info"><div class="n">'+esc(p.name)+'</div><div class="u">'+esc(p.unit)+'</div></div>' +
+        '<div class="qty-stepper" style="width:84px;"><button onclick="changeQty(\'rik\',\''+id+'\',-1)">−</button><span>'+qty+'</span><button onclick="changeQty(\'rik\',\''+id+'\',1)">+</button></div></div>';
+    }).join('');
+    body.innerHTML = rows +
+      '<div class="card" style="margin-top:14px;background:var(--blue-light);border-color:transparent;"><p style="font-size:12px;color:var(--blue-dark);margin:0;font-weight:600;">No payment required — RIK items are issued against your approved entitlement.</p></div>' +
+      '<button class="btn blue" style="margin-top:14px;" onclick="nav(\'rikCheckout\')">Choose pickup / delivery</button>';
+  }
+  window.setRikFulfilment = function(v){
+    lastFulfilment.rik = v;
+    byId('rikFulPickup').classList.toggle('on', v==='pickup');
+    byId('rikFulDelivery').classList.toggle('on', v==='delivery');
+    byId('rikPickupPanel').style.display   = v==='pickup'   ? 'block' : 'none';
+    byId('rikDeliveryPanel').style.display = v==='delivery' ? 'block' : 'none';
+    clearAddrError('rik');
+  };
+  /* Spec RIK-6b / PIF-6: a delivery order cannot be submitted without an address. */
+  window.clearAddrError = function(mod){ byId(mod+'AddrErr').style.display = 'none'; };
+  function deliveryAddressOk(mod){
+    var el = byId(mod+'Addr');
+    if(el && el.value.trim().length >= 6) return true;
+    byId(mod+'AddrErr').style.display = 'block';
+    if(el) el.focus();
+    return false;
+  }
+  window.confirmRikOrder = function(){
+    if(lastFulfilment.rik === 'delivery' && !deliveryAddressOk('rik')){
+      showToast('Delivery address required');
+      return;
+    }
+    var addr = byId('rikAddr') ? byId('rikAddr').value.trim() : '';
+    rikCart = {};
+    if(byId('rikAddr')) byId('rikAddr').value = '';
+    showOrderConfirmed('rik', lastFulfilment.rik, addr, 0);
+  };
+  var RIK_ORDER_FIXTURES = [
+    {id:'RIK-2026-0091', status:'confirmed', fulfilment:'pickup', date:'6 Sep 2026',
+     lines:[{name:'Rice (Sona Masoori)', qty:1, unit:'10 kg bag'},{name:'Toor Dal', qty:1, unit:'2 kg pack'}],
+     impact:'12 kg drawn against this month\u2019s entitlement'},
+    {id:'RIK-2026-0084', status:'collected', fulfilment:'pickup', date:'2 Sep 2026',
+     lines:[{name:'Sunflower Oil', qty:1, unit:'1 L pouch'},{name:'Sugar', qty:1, unit:'2 kg pack'}],
+     impact:'3 units drawn against this month\u2019s entitlement'},
+    {id:'RIK-2026-0071', status:'not_collected', fulfilment:'delivery', date:'24 Aug 2026',
+     lines:[{name:'Wheat Atta', qty:1, unit:'10 kg bag'}],
+     impact:'Entitlement reserved but not drawn \u2014 pending facility review'}
+  ];
+  function statusLabel(kind, status){
+    var maps = {
+      confirmed:'Order Confirmed', preparing:'Being Prepared', ready:'Ready for Pickup',
+      out_for_delivery:'Out for Delivery', collected:'Collected', delivered:'Delivered',
+      not_collected:'Not Collected'
+    };
+    return maps[status] || status;
+  }
+  function renderRikOrders(){
+    byId('rikOrdersBody').innerHTML = RIK_ORDER_FIXTURES.map(function(o){
+        var badge = o.status==='not_collected' ? '<span class="badge urgent">Not collected</span>' : '<span class="badge rik">'+statusLabel('rik',o.status)+'</span>';
+        return '<button class="card" style="width:100%;text-align:left;display:block;margin-bottom:10px;cursor:pointer;font-family:inherit;" onclick="openRikOrderDetail(\''+o.id+'\')">' +
+          '<div class="row between"><span style="font-weight:800;font-size:12.5px;color:var(--forest);">'+o.id+'</span>'+badge+'</div>' +
+          '<p class="muted" style="font-size:11px;margin:5px 0 0;">'+esc(o.items)+' · '+o.date+'</p></button>';
+      }).join('');
+  }
+  window.openRikOrderDetail = function(id){
+    var o = RIK_ORDER_FIXTURES.filter(function(x){return x.id===id;})[0];
+    if(!o) return;
+    byId('rikOrderDetailTitle').textContent = o.id;
+    var steps;
+    if(o.status === 'not_collected'){
+      steps = '<div class="stepper">' +
+        step(true,false,'Confirmed','Request approved against entitlement') +
+        step(true,false, o.fulfilment==='pickup' ? 'Ready for pickup':'Out for delivery','6 Sep 2026') + '</div>' +
+        '<div class="card" style="margin-top:10px;background:var(--danger-light);border-color:transparent;"><p style="font-size:11.5px;color:var(--danger);margin:0;font-weight:700;">Not collected within the pickup window — contact the RIK counter to reschedule.</p></div>';
+    } else {
+      var s3 = o.fulfilment==='pickup' ? 'Collected' : 'Delivered';
+      steps = '<div class="stepper">' +
+        step(true,false,'Confirmed','Request approved against entitlement') +
+        step(true,false, o.fulfilment==='pickup' ? 'Ready for pickup':'Out for delivery','Handed to '+(o.fulfilment==='pickup'?'store counter':'delivery staff')) +
+        step(o.status==='collected'||o.status==='delivered', o.status!=='collected'&&o.status!=='delivered', s3, o.date) + '</div>';
+    }
+    byId('rikOrderDetailBody').innerHTML = orderFacts([
+      ['Request number', o.id],
+      ['Date', o.date],
+      ['Method', o.fulfilment==='pickup' ? 'Pickup' : 'Delivery'],
+      ['Status', statusLabel('rik', o.status)],
+      ['Collection', o.status==='collected' ? 'Collected by customer'
+        : (o.status==='delivered' ? 'Delivered to address'
+        : (o.status==='not_collected' ? 'Not collected' : 'Awaiting collection'))]
+    ]) + orderLines(o.lines, false) +
+      '<div class="card" style="background:var(--blue-light);border-color:transparent;margin-bottom:16px;">' +
+      '<h3 class="h" style="color:var(--blue-dark);margin-bottom:4px;">Entitlement impact</h3>' +
+      '<p style="font-size:12px;margin:0;color:var(--blue-dark);">'+esc(o.impact)+'</p></div>' +
+      '<h3 class="h" style="margin-bottom:10px;">Progress</h3>' + steps;
+    nav('rikOrderDetail');
+  };
+  function step(done, current, title, sub){
+    return '<div class="step '+(done?'done':current?'current':'')+'"><div class="rail"><div class="node"></div><div class="line"></div></div>' +
+      '<div class="content"><h6>'+esc(title)+'</h6><p>'+esc(sub)+'</p></div></div>';
+  }
+
+  /* ---------------- PIF render ---------------- */
+  function renderPifHome(){
+    byId('pifCatGrid').innerHTML = PIF_CATS.map(function(c){
+      return '<button class="cat-tile" style="background:'+c.bg+';color:'+c.fg+';" onclick="openPifCategory(\''+c.id+'\')">' +
+        '<span class="ic" style="background:rgba(255,255,255,.55);">'+c.emoji+'</span><span>'+esc(c.name)+'</span></button>';
+    }).join('');
+    byId('pifProductGrid').innerHTML = PIF_PRODUCTS.slice(0,4).map(function(p){ return productCard(p,'pif'); }).join('');
+    var count = Object.keys(pifCart).reduce(function(s,k){return s+pifCart[k];},0);
+    var dot = byId('pifCartDot');
+    dot.style.display = count>0 ? 'flex':'none'; dot.textContent = count;
+  }
+  window.openPifCategory = function(catId, sub){
+    var cat = PIF_CATS.filter(function(c){return c.id===catId;})[0];
+    byId('pifCategoryTitle').textContent = cat ? cat.name : 'Category';
+    var items = PIF_PRODUCTS.filter(function(p){return p.cat===catId && (!sub || p.sub===sub);});
+    var chips = '';
+    if(cat && cat.subs && cat.subs.length){
+      chips = '<div class="sub-chips">' +
+        '<button class="sub-chip'+(sub?'':' on')+'" onclick="openPifCategory(\''+catId+'\')">All</button>' +
+        cat.subs.map(function(s){
+          return '<button class="sub-chip'+(sub===s?' on':'')+'" onclick="openPifCategory(\''+catId+'\',\''+s.replace(/'/g,"") +'\')">'+esc(s)+'</button>';
+        }).join('') + '</div>';
+    }
+    byId('pifCategoryChips').innerHTML = chips;
+    byId('pifCategoryGrid').innerHTML = items.map(function(p){ return productCard(p,'pif'); }).join('') ||
+      '<div style="grid-column:1/-1;"><div class="empty"><div class="ic">\ud83d\udce6</div><h4>No items yet</h4><p>This section will be stocked soon.</p></div></div>';
+    nav('pifCategory');
+  };  window.openPifProduct = function(id){
+    var p = PIF_PRODUCTS.filter(function(x){return x.id===id;})[0];
+    if(!p) return;
+    var qty = pifCart[id] || 0;
+    byId('pifProductBody').innerHTML =
+      '<div style="aspect-ratio:1/1;max-width:150px;margin:0 auto 14px;border-radius:20px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:52px;">'+p.emoji+'</div>' +
+      '<span class="badge pif">PIF</span>' +
+      '<h2 style="font-size:16px;margin:8px 0 2px;color:var(--forest);">'+esc(p.name)+'</h2>' +
+      '<p class="muted" style="font-size:12px;margin:0 0 8px;">'+esc(p.unit)+'</p>' +
+      '<div class="price-row" style="margin-bottom:14px;"><span class="price" style="font-size:19px;">'+money(p.price)+'</span>' + (p.mrp>p.price?'<span class="mrp" style="font-size:13px;">'+money(p.mrp)+'</span>':'') + '</div>' +
+      '<div class="card"><p style="font-size:11.5px;color:var(--slate-600);margin:0;">In stock · Facility price, inclusive of applicable charges.</p></div>' +
+      '<div style="margin-top:16px;">' + (qty>0
+        ? '<div class="qty-stepper pif" style="padding:6px;"><button onclick="changeQty(\'pif\',\''+id+'\',-1)">−</button><span style="font-size:14px;">'+qty+' in cart</span><button onclick="changeQty(\'pif\',\''+id+'\',1)">+</button></div>'
+        : '<button class="btn green" onclick="changeQty(\'pif\',\''+id+'\',1)">Add to cart</button>') + '</div>';
+    nav('pifProduct');
+  };
+  function pifTotals(){
+    var subtotal = Object.keys(pifCart).reduce(function(s,id){
+      var p = PIF_PRODUCTS.filter(function(x){return x.id===id;})[0];
+      return s + (p ? p.price * pifCart[id] : 0);
+    }, 0);
+    var deliveryFee = subtotal > 0 && lastFulfilment.pif === 'delivery' ? 20 : 0;
+    return {subtotal:subtotal, deliveryFee:deliveryFee, total:subtotal+deliveryFee};
+  }
+  function renderPifCart(){
+    var ids = Object.keys(pifCart);
+    var body = byId('pifCartBody');
+    if(ids.length===0){
+      body.innerHTML = '<div class="empty"><div class="ic">🛒</div><h4>Your cart is empty</h4><p>Browse groceries to start shopping.</p><button class="btn outline-green sm" style="margin-top:10px;width:auto;padding:8px 16px;" onclick="nav(\'pifHome\')">Browse PIF</button></div>';
+      return;
+    }
+    var rows = ids.map(function(id){
+      var p = PIF_PRODUCTS.filter(function(x){return x.id===id;})[0];
+      var qty = pifCart[id];
+      return '<div class="cart-row"><div class="thumb" style="background:var(--green-light);">'+p.emoji+'</div>' +
+        '<div class="info"><div class="n">'+esc(p.name)+'</div><div class="u">'+esc(p.unit)+' · '+money(p.price)+'</div></div>' +
+        '<div class="qty-stepper pif" style="width:84px;"><button onclick="changeQty(\'pif\',\''+id+'\',-1)">−</button><span>'+qty+'</span><button onclick="changeQty(\'pif\',\''+id+'\',1)">+</button></div></div>';
+    }).join('');
+    var t = pifTotals();
+    body.innerHTML = rows +
+      '<div style="margin-top:12px;">' +
+      '<div class="sum-row"><span>Subtotal</span><span>'+money(t.subtotal)+'</span></div>' +
+      '<div class="sum-row"><span>Delivery</span><span>'+(t.deliveryFee?money(t.deliveryFee):'—')+'</span></div>' +
+      '<div class="sum-row total"><span>Total (COD)</span><span>'+money(t.total)+'</span></div></div>' +
+      '<button class="btn green" style="margin-top:14px;" onclick="nav(\'pifCheckout\')">Proceed to checkout</button>';
+  }
+  window.setPifFulfilment = function(v){
+    lastFulfilment.pif = v;
+    byId('pifFulDelivery').classList.toggle('on', v==='delivery');
+    byId('pifFulPickup').classList.toggle('on', v==='pickup');
+    byId('pifDeliveryPanel').style.display = v==='delivery' ? 'block' : 'none';
+    byId('pifPickupPanel').style.display   = v==='pickup'   ? 'block' : 'none';
+    clearAddrError('pif');
+    renderPifCheckoutSummary();
+  };
+  function renderPifCheckoutSummary(){
+    var t = pifTotals();
+    byId('pifCheckoutSummary').innerHTML = '<h3 class="h" style="margin-bottom:8px;">Order summary</h3>' +
+      '<div class="sum-row"><span>Subtotal</span><span>'+money(t.subtotal)+'</span></div>' +
+      '<div class="sum-row"><span>Delivery</span><span>'+(t.deliveryFee?money(t.deliveryFee):'—')+'</span></div>' +
+      '<div class="sum-row total"><span>Total due on delivery</span><span>'+money(t.total)+'</span></div>';
+  }
+  window.confirmPifOrder = function(){
+    if(lastFulfilment.pif === 'delivery' && !deliveryAddressOk('pif')){
+      showToast('Delivery address required');
+      return;
+    }
+    var t = pifTotals();
+    var addr = byId('pifAddr') ? byId('pifAddr').value.trim() : '';
+    pifCart = {};
+    if(byId('pifAddr')) byId('pifAddr').value = '';
+    showOrderConfirmed('pif', lastFulfilment.pif, addr, t.total);
+  };
+  var PIF_ORDER_FIXTURES = [
+    {id:'PIF-2026-1188', status:'preparing', total:67, date:'6 Sep 2026', method:'Delivery',
+     lines:[{name:'Toned Milk', qty:1, unit:'1 L pouch', price:29},{name:'White Bread', qty:1, unit:'400 g loaf', price:38}]},
+    {id:'PIF-2026-1179', status:'out_for_delivery', total:159, date:'5 Sep 2026', method:'Delivery',
+     lines:[{name:'Bananas', qty:1, unit:'1 dozen', price:54},{name:'Paneer', qty:1, unit:'200 g pack', price:85},{name:'Potato Chips', qty:1, unit:'90 g pack', price:20}]},
+    {id:'PIF-2026-1150', status:'delivered', total:199, date:'1 Sep 2026', method:'Pickup',
+     lines:[{name:'Laundry Detergent', qty:1, unit:'1 kg pack', price:110},{name:'Toothpaste', qty:1, unit:'150 g tube', price:89}]}
+  ];
+  function renderPifOrders(){
+    byId('pifOrdersBody').innerHTML = PIF_ORDER_FIXTURES.map(function(o){
+        return '<button class="card" style="width:100%;text-align:left;display:block;margin-bottom:10px;cursor:pointer;font-family:inherit;" onclick="openPifOrderDetail(\''+o.id+'\')">' +
+          '<div class="row between"><span style="font-weight:800;font-size:12.5px;color:var(--forest);">'+o.id+'</span><span class="badge pif">'+statusLabel('pif',o.status)+'</span></div>' +
+          '<p class="muted" style="font-size:11px;margin:5px 0 0;">'+esc(o.items)+' · '+o.date+' · '+money(o.total)+'</p></button>';
+      }).join('');
+  }
+  window.openPifOrderDetail = function(id){
+    var o = PIF_ORDER_FIXTURES.filter(function(x){return x.id===id;})[0];
+    if(!o) return;
+    byId('pifOrderDetailTitle').textContent = o.id;
+    var order = ['confirmed','preparing','ready','out_for_delivery','delivered'];
+    var idx = order.indexOf(o.status);
+    var titles = {confirmed:'Order Confirmed',preparing:'Being Prepared',ready:'Ready / Picked',out_for_delivery:'Out for Delivery',delivered:'Delivered'};
+    var steps = order.map(function(key,i){
+      return step(i<idx, i===idx, titles[key], i<=idx ? 'Updated '+o.date : 'Pending');
+    }).join('');
+    byId('pifOrderDetailBody').innerHTML = orderFacts([
+      ['Order number', o.id],
+      ['Date', o.date],
+      ['Method', o.method],
+      ['Payment', 'Cash on Delivery'],
+      ['Status', titles[o.status] || o.status],
+      ['Order total', money(o.total)]
+    ]) + orderLines(o.lines, true) +
+      '<h3 class="h" style="margin-bottom:10px;">Progress</h3>' +
+      '<div class="stepper">'+steps+'</div>';
+    nav('pifOrderDetail');
+  };
+
+  /* ---------------- announcements + notifications ---------------- */
+  var ANN_ICONS = {
+    megaphone:'<path d="M3 11v2a1 1 0 001 1h2l4 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M15 9a4 4 0 010 6"/>',
+    calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'
+  };
+  function annIcon(priority){
+    if(priority==='URGENT') return {bg:'var(--danger)',badge:'urgent',label:'Urgent'};
+    if(priority==='HIGH') return {bg:'var(--amber)',badge:'high',label:'High'};
+    return {bg:'var(--green)',badge:'normal',label:''};
+  }
+  function annRow(a){
+    var ic = annIcon(a.priority);
+    var glyph = ANN_ICONS[a.kind] || ANN_ICONS.info;
+    var badge = ic.label
+      ? '<span class="badge '+ic.badge+'">'+ic.label+'</span>'
+      : '';
+    return '<button class="ann-row'+(a.priority==='URGENT'?' urgent':'')+'" onclick="nav(\'notifications\')">' +
+      '<span class="aic" style="background:'+ic.bg+';"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+glyph+'</svg></span>' +
+      '<span style="flex:1;min-width:0;display:block;"><h5>'+esc(a.title)+'</h5><p>'+esc(a.body)+'</p></span>' +
+      '<span class="meta">'+badge+'<span class="date">'+a.date+'</span><span class="chev">›</span></span></button>';
+  }
+  function renderAnnouncements(){
+    byId('homeAnnouncements').innerHTML = ANNOUNCEMENTS.map(annRow).join('');
+  }
+  function renderNotifications(){
+    byId('notificationsBody').innerHTML =
+      '<div class="ann-panel" style="margin-top:10px;">' + ANNOUNCEMENTS.map(annRow).join('') + '</div>';
+  }
+
+  /* ---------------- order presentation helpers ---------------- */
+  function orderFacts(rows){
+    return '<dl class="facts">' + rows.map(function(r){
+      return '<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>';
+    }).join('') + '</dl>';
+  }
+  function orderLines(lines, withPrice){
+    if(!lines || !lines.length) return '';
+    return '<h3 class="h" style="margin-bottom:8px;">Items</h3><div class="card" style="margin-bottom:16px;padding:4px 12px;">' +
+      lines.map(function(l){
+        return '<div class="line-row"><span class="ln">'+esc(l.name)+'<em>'+esc(l.unit)+'</em></span>' +
+          '<span class="lq">\u00d7 '+l.qty+'</span>' +
+          (withPrice ? '<span class="lp">'+money(l.price*l.qty)+'</span>' : '') + '</div>';
+      }).join('') + '</div>';
+  }
+  /* Explicit Order Confirmation stage (spec PIF-2). */
+  window.showOrderConfirmed = function(module, method, address, total){
+    var isRik = module === 'rik';
+    var num = (isRik ? 'RIK' : 'PIF') + '-2026-' + String(Math.floor(Math.random()*9000)+1000);
+    byId('confTitle').textContent = isRik ? 'Request confirmed' : 'Order confirmed';
+    var rows = [
+      [isRik ? 'Request number' : 'Order number', num],
+      ['Method', method === 'pickup' ? 'Pickup' : 'Delivery']
+    ];
+    if(method === 'delivery' && address) rows.push(['Delivery address', address]);
+    if(!isRik){ rows.push(['Payment', 'Cash on Delivery']); rows.push(['Amount due on delivery', money(total)]); }
+    byId('confBody').innerHTML =
+      '<div style="text-align:center;margin-bottom:20px;">' +
+      '<div style="width:74px;height:74px;border-radius:999px;background:'+(isRik?'var(--blue-light)':'var(--green-light)')+';display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">' +
+      '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="'+(isRik?'var(--blue)':'var(--green)')+'" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>' +
+      '<h2 style="font-size:19px;margin:0 0 6px;color:var(--forest-dark);">'+(isRik?'Request submitted':'Thank you for your order')+'</h2>' +
+      '<p class="muted" style="font-size:13px;margin:0;">'+(isRik
+        ? 'Your ration request has been recorded against your entitlement.'
+        : 'You will pay in cash when your order is handed over.')+'</p></div>' +
+      orderFacts(rows) +
+      '<button class="btn '+(isRik?'blue':'green')+'" style="margin-bottom:10px;" onclick="history=[\''+(isRik?'rikOrders':'pifOrders')+'\'];nav(\''+(isRik?'rikOrders':'pifOrders')+'\',false)">' +
+        (isRik ? 'View My RIK Orders' : 'View My PIF Orders') + '</button>' +
+      '<button class="btn ghost" onclick="history=[\''+(isRik?'rikHome':'pifHome')+'\'];nav(\''+(isRik?'rikHome':'pifHome')+'\',false)">Continue shopping</button>';
+    history = ['orderConfirmed'];
+    nav('orderConfirmed', false);
+  };
+
+  /* ---------------- master render ---------------- */
+  function render(){
+    renderBottomNavs();
+    renderRikHome();
+    renderPifHome();
+    renderRikCart();
+    renderPifCart();
+    renderAnnouncements();
+    renderNotifications();
+    renderRikOrders();
+    renderPifOrders();
+    renderPifCheckoutSummary();
+  }
+
+  render();
+})();
+</script>

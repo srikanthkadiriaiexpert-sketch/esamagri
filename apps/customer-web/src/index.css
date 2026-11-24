@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    /* Respect notches / home indicator on Android + iOS PWA contexts. */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+  }
+
+  /* Every interactive control gets at least a 44px touch target
+     (STEP 8 Section 25 — accessibility) — enforced per-component via
+     the design system's `touch` spacing tokens, not globally here. */
+
+  :focus-visible {
+    outline: 2px solid #026a2e;
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .app-shell {
+    @apply mx-auto w-full max-w-app;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /*
+   * One number for "how tall is the bottom navigation", so the sticky cart
+   * bar sits ON it rather than over it, and the page reserves exactly the
+   * right amount of room. Changing the nav's height changes both.
+   */
+  :root {
+    --nav-height: 3.5rem;
+    --cart-bar-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 0.5rem);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /*
+   * DYNAMIC VIEWPORT HEIGHT — the iOS Safari fix.
+   *
+   * On iOS Safari `100vh` is the viewport with the address bar and toolbar
+   * HIDDEN, which is taller than what the reader can actually see while they
+   * are showing. A box sized to 100vh therefore runs underneath the browser
+   * chrome, and anything centred inside it is pushed below the fold. On the
+   * sign-in and OTP screens — the first two screens anyone sees — that put
+   * the button under the toolbar on a short phone.
+   *
+   * `100dvh` is the height actually on screen right now. Both declarations
+   * are kept in ONE rule so the order decides: engines that do not know
+   * `dvh` ignore the second line and keep `100vh`, engines that do know it
+   * take the second. No @supports, no feature test, nothing to get wrong.
+   *
+   * Supported from iOS Safari 15.4 and Chrome 108. Older phones fall back to
+   * exactly today's behaviour.
+   *
+   * NOTE FOR TESTING: in a headless browser there is no retracting toolbar,
+   * so `dvh` and `vh` are identical and this change is invisible. It can
+   * only be seen on a real phone.
+   */
+  .min-h-screen-safe {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /*
+   * HOME-SCREEN SHOWCASE — the moving "Popular in PIF" row. Each card is a
+   * product; its picture is the product's own photograph where one has been
+   * uploaded and its category's otherwise. Nothing below cares which,
+   * because it only ever slides a track of cards.
+   *
+   * CSS, not JavaScript, and deliberately so. The track is the product list
+   * rendered twice and slid by `transform` under the keyframes below, which
+   * the browser runs on the compositor: no requestAnimationFrame loop, no
+   * scroll handler firing per frame, no layout or paint per step. That is
+   * what keeps it smooth on a mid-range Android phone, which is what most
+   * of this facility actually carries.
+   *
+   * Sliding from -50% to 0 moves the cards LEFT TO RIGHT. Because the track
+   * holds exactly two identical copies, -50% is one full copy, so the end of
+   * the animation is pixel-identical to its start and the loop has no seam.
+   *
+   * `will-change` is NOT set here. It would promote the layer permanently,
+   * including on the many visits where the row never animates (reduced
+   * motion, or the customer swiping within the first second), and an
+   * always-promoted full-width layer costs memory on exactly the cheap
+   * devices this is trying to stay smooth on. The transform alone is enough
+   * for the browser to promote it while it runs.
+   */
+  .showcase-viewport {
+    /* Full-bleed to the content gutter, so cards slide in from the edge
+       rather than appearing out of a hard boundary mid-screen. */
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .showcase-track {
+    display: flex;
+    width: max-content;
+    gap: 0.75rem;
+    padding: 0.25rem;
+    animation: showcase-slide 38s linear infinite;
+  }
+
+  .showcase-item {
+    flex: 0 0 9rem;
+    scroll-snap-align: start;
+  }
+
+  /* Hover and keyboard focus pause it. A customer reading a card should not
+     have it slide out from under them. */
+  .showcase-viewport:hover .showcase-track,
+  .showcase-viewport:focus-within .showcase-track {
+    animation-play-state: paused;
+  }
+
+  /*
+   * Manual control. Once a finger, wheel or trackpad has moved this row the
+   * component drops the animation class entirely and what is left is an
+   * ordinary native horizontal scroller with snap points. Resuming the
+   * slide under a finger that has just swiped is the single thing that
+   * makes carousels feel broken, so it never resumes.
+   */
+  .showcase-track--manual {
+    animation: none;
+    width: auto;
+  }
+
+  @keyframes showcase-slide {
+    from {
+      transform: translate3d(-50%, 0, 0);
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  /*
+   * Reduced motion is honoured before a single frame runs: no animation at
+   * all, and the track collapses to its natural width. The component also
+   * stops rendering the duplicate copy in that case, so nobody sees the
+   * same twelve products listed twice.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .showcase-track {
+      animation: none;
+      width: auto;
+    }
+    .showcase-viewport {
+      scroll-snap-type: none;
+    }
+  }
+
+  /* The same, for a panel that must not grow past the visible viewport. */
+  .max-h-sheet {
+    max-height: 75vh;
+    max-height: 75dvh;
+  }
+  .max-h-dialog {
+    max-height: 85vh;
+    max-height: 85dvh;
+  }
+}

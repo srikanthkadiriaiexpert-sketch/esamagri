@@ -1,0 +1,21 @@
+{
+  "name": "esamagri-app",
+  "private": true,
+  "description": "e Samagri application monorepo \u2014 Phase 3B foundation. Built on the frozen Phase 2 database contract (47 tables, 5 views, 24 migrations, 9 test files). See database/ for the approved, unmodified database migrations.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "overrides": {
+    "multer": "^2.3.0"
+  },
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  }
+}

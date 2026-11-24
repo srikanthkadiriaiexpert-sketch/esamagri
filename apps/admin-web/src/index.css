@@ -1,0 +1,274 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    /* Respect notches / home indicator on Android + iOS PWA contexts. */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+  }
+
+  /* Every interactive control gets at least a 44px touch target
+     (STEP 8 Section 25 — accessibility) — enforced per-component via
+     the design system's `touch` spacing tokens, not globally here. */
+
+  :focus-visible {
+    outline: 2px solid #026a2e;
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .app-shell {
+    @apply mx-auto w-full max-w-app;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /*
+    Content that exists ONLY on paper — the printed voucher's header and its
+    signature block. Hidden on screen so the panel stays compact; revealed
+    by the print rules below.
+  */
+  .print-only {
+    display: none;
+  }
+}
+
+/*
+  PRINTING ONE ISSUE VOUCHER (PHASE C).
+
+  Two attributes and nothing else. `data-print="hide"` goes on the chrome —
+  the app header, the sidebar, the filter form, the results table, the
+  pager, the buttons — and `data-print="sheet"` on the one open voucher
+  panel. Printing then yields that voucher on a clean page.
+
+  WHY ATTRIBUTES RATHER THAN A SEPARATE PRINT ROUTE. A print route would be
+  a second rendering of the voucher, free to drift from the one on screen,
+  and it would have to fetch the voucher again. This prints the very element
+  the operator is looking at, so what leaves the printer is what they
+  checked — and NO REQUEST IS MADE AT ALL, which is what makes printing
+  structurally incapable of touching a fulfilment record.
+
+  Everything below is inside @media print, so no screen layout changes.
+*/
+/*
+  A4 PORTRAIT WITH A KNOWN MARGIN.
+
+  Stated rather than inherited, because every other width rule below is
+  reasoned against it: 210mm less 2x12mm leaves 186mm (~703px at 96dpi) of
+  printable width. Chrome's "Default" margin is wider and varies, so without
+  this the provision table is being fitted to a width nobody can name.
+*/
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+@media print {
+  [data-print='hide'] {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  body {
+    padding-bottom: 0;
+  }
+
+  /*
+    THE BLANK TRAILING PAGE, AND WHY IT APPEARED EVEN FOR A SHORT VOUCHER.
+
+    The application shell is `min-h-screen`, i.e. `min-height: 100vh`. When
+    printing, Chrome resolves `vh` against the PAGE box — so that one div is
+    a full page tall on its own, before any voucher content exists. Its
+    child adds `py-6` (24px top and bottom). The result is one page plus
+    48px, which spills onto a second page that is empty because nothing was
+    ever in it.
+
+    That is why the symptom did not track the amount of voucher content:
+    the extra page came from the shell, not from the voucher. Clearing the
+    viewport-height floor and the shell's own padding is the whole fix.
+  */
+  html,
+  body,
+  #root {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .min-h-screen {
+    min-height: 0 !important;
+  }
+
+  /* The shell's centring container: full bleed and no padding on paper. */
+  .max-w-7xl {
+    max-width: none !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  /* A card on screen; a sheet of paper here. */
+  [data-print='sheet'] {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  /*
+    Black text throughout. Browsers drop background colours when printing,
+    so a pale-on-pale status badge would otherwise come out unreadable.
+  */
+  [data-print='sheet'],
+  [data-print='sheet'] * {
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /*
+    THE HORIZONTAL SCROLLBAR, AND THE COLUMNS THAT WOULD NOT FIT.
+
+    The shared ConfigTable wraps its table in `overflow-x-auto` and gives
+    the table `min-w-[46rem]` — a 736px floor. The printable width above is
+    about 703px, so the table is WIDER THAN THE PAGE by construction,
+    whatever the data. On screen that floor is doing a real job (five
+    columns stay readable and the container scrolls); on paper there is
+    nothing to scroll, so it only clips.
+
+    Releasing the floor and letting the container overflow visibly is what
+    makes all five columns land on the page. No column is dropped and no
+    value is hidden — the width is redistributed, not reduced.
+  */
+  [data-print='sheet'] .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  [data-print='sheet'] table {
+    border-collapse: collapse !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    /*
+      Fixed layout so the percentages below are honoured. With `auto`, a
+      single long provision name would widen its column and push the two
+      numeric columns off the page — the exact failure being fixed.
+    */
+    table-layout: fixed !important;
+    font-size: 9pt !important;
+  }
+
+  /*
+    The five provision columns: Provision, Variety, Pack, To issue, Pool
+    equivalent. Provision is widest because it carries a name AND a code on
+    a second line; the two numeric columns need the least.
+  */
+  [data-print='sheet'] th:nth-child(1),
+  [data-print='sheet'] td:nth-child(1) {
+    width: 30%;
+  }
+  [data-print='sheet'] th:nth-child(2),
+  [data-print='sheet'] td:nth-child(2) {
+    width: 18%;
+  }
+  [data-print='sheet'] th:nth-child(3),
+  [data-print='sheet'] td:nth-child(3) {
+    width: 18%;
+  }
+  [data-print='sheet'] th:nth-child(4),
+  [data-print='sheet'] td:nth-child(4) {
+    width: 17%;
+  }
+  [data-print='sheet'] th:nth-child(5),
+  [data-print='sheet'] td:nth-child(5) {
+    width: 17%;
+  }
+
+  [data-print='sheet'] th,
+  [data-print='sheet'] td {
+    border: 1px solid #000 !important;
+    /* The screen's px-4 py-3 is generous for paper and costs a page. */
+    padding: 3px 5px !important;
+    /*
+      WRAP, NEVER CLIP. A long provision name or code breaks onto a second
+      line inside its own cell rather than being cut off — point 5 of the
+      brief, and the reason a fixed layout is safe here.
+    */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  /* Tighter vertical rhythm: the sheet's gap-4 is 1rem per gap on paper. */
+  [data-print='sheet'] {
+    gap: 0.5rem !important;
+    font-size: 10pt;
+  }
+
+  /*
+    If a pool table IS long enough to split, its headings repeat on the
+    next page. Without this the continuation is five unlabelled columns.
+  */
+  [data-print='sheet'] thead {
+    display: table-header-group;
+  }
+
+  /*
+    Keep a short pool table whole, and the signature block whole. Browsers
+    ignore `break-inside: avoid` on a box taller than a page, so a genuinely
+    long table still breaks cleanly rather than being forced off — which is
+    the brief's "where practical".
+  */
+  [data-print='sheet'] .overflow-x-auto,
+  [data-print='sheet'] .print-keep {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* A ration line must not be split across two pages. */
+  [data-print='sheet'] tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* The paper footer sits below the content, not a screen-sized gap away. */
+  [data-print='sheet'] .print-keep {
+    margin-top: 0.75rem !important;
+    padding-top: 0.5rem !important;
+  }
+}

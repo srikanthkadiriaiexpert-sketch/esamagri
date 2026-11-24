@@ -1,0 +1,64 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+coverage/
+.turbo/
+
+# ------------------------------------------------------------------------------
+# Added 24 November 2026, before the first Git commit.
+# These mirror the exclusions in SERVER_HANDOVER\01_SOURCE_CODE\CREATE_SOURCE_ZIP.ps1.
+# ------------------------------------------------------------------------------
+
+# Every environment file, whatever it is called (this is what catches
+# apps/api/.env.before-365-backup). The examples are kept.
+.env.*
+!.env.example
+
+# Uploaded media and local backup sets - may hold customer data.
+var/
+
+# Database dumps and archives - real data.
+*.dump
+*.sql.gz
+*.tar.gz
+
+# Private keys and certificates.
+*.pem
+*.key
+*.pfx
+*.p12
+*.crt
+
+# Caches and compiler state.
+.vite/
+.cache/
+*.tsbuildinfo
+npm-debug.log*
+Thumbs.db
+
+# ------------------------------------------------------------------------------
+# Files that contain the shared DEMO STAFF PASSWORD in plain text. That one
+# password signs in demo_super_admin and the four other demo staff accounts,
+# so these stay on this computer and out of the repository. None of them is
+# needed to build or run the application on the server.
+# ------------------------------------------------------------------------------
+/demo-setup.cjs
+/demo-start.cjs
+/DO-NOT-RUN_demo-setup.cjs
+/DO-NOT-RUN_demo-start.cjs
+/DEMO-README.md
+/RUN-ON-YOUR-OWN-MACHINE.md
+/UNZIP-FIRST.txt
+/docs/DEMO-RUNBOOK.md
+/docs/reports/final-practical-verification-2026-10-10.md
+/docs/reports/launch-preparation-report-2026-10-11.md
+
+# These two contain the staging DATABASE PASSWORD in plain text (found by the
+# pre-commit check on 24 November 2026).
+/demo-bootstrap.cjs
+/DO-NOT-RUN_demo-bootstrap.cjs
